@@ -64,14 +64,14 @@ AppInfrastructureConfig = InfrastructureConfig(
             INSTANCE_CFN_ID=f"EC2-{common_config.ENV}-{common_config.COMMON_NAME}-{common_config.APP_NAME}-1",
             INSTANCE_NAME=f"EC2-{common_config.ENV}-{common_config.COMMON_NAME}-{common_config.APP_NAME}-1",
             INSTANCE_TYPE=ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
-            MACHINE_IMAGE=ec2.MachineImage.generic_windows({'us-central-1': 'ami-05e885aafb1fdb4dd'}),
+            MACHINE_IMAGE=ec2.MachineImage.generic_windows({'eu-central-1': 'ami-05e885aafb1fdb4dd'}),
             USER_DATA_SCRIPT=nginx_user_data
         ),
         Ec2InstanceConfig(
             INSTANCE_CFN_ID=f"EC2-{common_config.ENV}-{common_config.COMMON_NAME}-{common_config.APP_NAME}-2",
             INSTANCE_NAME=f"EC2-{common_config.ENV}-{common_config.COMMON_NAME}-{common_config.APP_NAME}-2",
             INSTANCE_TYPE=ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
-            MACHINE_IMAGE=ec2.MachineImage.generic_windows({'us-central-1': 'ami-05e885aafb1fdb4dd'}),
+            MACHINE_IMAGE=ec2.MachineImage.generic_windows({'eu-central-1': 'ami-05e885aafb1fdb4dd'}),
             USER_DATA_SCRIPT=nginx_user_data
         ),
         # Add more Ec2InstanceConfig objects here to create more instances
