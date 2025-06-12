@@ -235,9 +235,18 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: buildspec.yaml
       Environment:
-        Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+          - Name: EnvName
+            Type: PLAINTEXT
+            Value: !Sub '${EnvName}'
+          - Name: GitHubRepositoryName
+            Type: PLAINTEXT
+            Value: !Sub '${GitHubRepositoryName}'
+          - Name: ApplicationName
+            Type: PLAINTEXT
+            Value: !Sub '${ApplicationName}'   
+          - Name: CommonName
+            Type: PLAINTEXT
+            Value: !Sub '${CommonName}'
       Cache:
         Type: NO_CACHE
 
