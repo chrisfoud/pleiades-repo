@@ -126,7 +126,7 @@ class VpcAlbEc2Stack(Stack):
             load_balancer_name=app_config.ALB.ALB_NAME
         )
         Tags.of(self.alb).add("Name", app_config.ALB.ALB_NAME)
-        self.alb.apply_tags({"Description": "ALB for web application"})
+        Tags.of(self.alb).add("Description", "ALB for web application")
 
 
         # 7. Create Target Group
