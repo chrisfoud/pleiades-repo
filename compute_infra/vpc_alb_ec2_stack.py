@@ -41,7 +41,7 @@ class VpcAlbEc2Stack(Stack):
             ]
         )
         Tags.of(self.vpc).add("Name", app_config.VPC.VPC_NAME)
-        self.vpc.apply_tags({"Description": "VPC for web application with ALB and EC2"})
+        Tags.of(self.vpc).add("Description", "VPC for web application with ALB and EC2")
 
         # 2. Create Security Group for EC2 instances
         # This security group will allow inbound traffic from the ALB's security group
