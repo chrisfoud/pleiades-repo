@@ -1,0 +1,237 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation template to create a CodePipeline that fetches
+  code from a GitHub repository.
+
+Parameters:
+  GitHubRepositoryOwner:
+    Type: String
+    Default: chrisfoud
+    Description: Owner of the GitHub repository.
+
+  GitHubRepositoryName:
+    Type: String
+    Default: pleiades-repo
+    Description: Name of the GitHub repository.
+
+  GitHubBranch:
+    Type: String
+    Default: main
+    Description: Branch of the GitHub repository to use as the source.
+
+  ArtifactBucket:
+    Type: String
+    Description: The S3 bucket to store build artifacts.
+
+Resources:
+  MyArtifactS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: ArtifactBucket
+      VersioningConfiguration:
+        Status: Enabled
+  
+  CodePipelineConnection:
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: pleiades-GitHubConnection
+      ProviderType: GitHub
+
+  CodePipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: pleiades-codepipelineartifactsbucket
+      VersioningConfiguration: 
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  CodePipelineBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: 
+        Ref: CodePipelineArtifactsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:PutObjectAcl
+              - s3:GetBucketLocation
+            Resource:
+              - Fn::GetAtt: [CodePipelineArtifactsBucket, Arn]
+              - Fn::Sub: "${CodePipelineArtifactsBucket.Arn}/*"
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CodePipelineServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: CodePipelinePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                Resource:
+                  - Fn::GetAtt: [CodePipelineArtifactsBucket, Arn]
+                  - Fn::Sub: "${CodePipelineArtifactsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                  - codestar:*
+                  - codeconnections:*
+                  - codestar-connections:UseConnection
+                Resource: '*'
+
+  UnitTestCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: UnitTestCodePipeline
+      RoleArn: 
+        Fn::GetAtt: [CodePipelineServiceRole, Arn]
+      ArtifactStore:
+        Type: S3
+        Location: 
+          Ref: CodePipelineArtifactsBucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GitHubSource
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: 1
+              OutputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ConnectionArn: 
+                  Fn::GetAtt: [CodePipelineConnection, ConnectionArn]
+                FullRepositoryId: 
+                  Fn::Sub: "${GitHubRepositoryOwner}/${GitHubRepositoryName}"
+                BranchName: 
+                  Ref: GitHubBranch
+              RunOrder: 1
+        
+        - Name: Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: 
+                  Ref: CodeBuildProject
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RunOrder: 1
+
+  # Add CodeBuild Project and Role
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeStarFullAccess
+      Policies:
+        - PolicyName: CodeBuildBasePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - Fn::Sub: "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+                Resource:
+                  - Fn::GetAtt: [CodePipelineArtifactsBucket, Arn]
+                  - Fn::Sub: "${CodePipelineArtifactsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeAvailabilityZones
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeRouteTables
+                  - ec2:DescribeInternetGateways
+                  - ec2:DescribeNatGateways
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: "arn:aws:ssm:eu-central-1:719436962790:parameter/cdk-bootstrap/*"
+              - Effect: Allow
+                Action:
+                  - sts:AssumeRole
+                Resource: "arn:aws:iam::719436962790:role/cdk-*"                
+
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: 
+        Fn::Sub: "${AWS::StackName}-build"
+      ServiceRole: 
+        Fn::GetAtt: [CodeBuildServiceRole, Arn]
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspec.yaml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+      Cache:
+        Type: NO_CACHE
+
+Outputs:
+  PipelineURL:
+    Description: CodePipeline URL
+    Value: 
+      Fn::Sub: "https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${UnitTestCodePipeline}"
+  ConnectionARN:
+    Description: Connection ARN
+    Value: 
+      Fn::GetAtt: [CodePipelineConnection, ConnectionArn]

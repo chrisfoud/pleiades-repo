@@ -1,0 +1,3 @@
+aws-cdk-lib==2.51.0
+constructs==10.1.249
+pytest>=6.0.0

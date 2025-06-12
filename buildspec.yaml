@@ -1,0 +1,36 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+      nodejs: 14
+
+    commands:
+      - npm install -g aws-cdk@2.51.0
+      - python -m pip install --upgrade pip
+      - python -m pip install aws-cdk-lib==2.51.0 constructs==10.1.249
+      - python -m pip install -r requirements.txt
+
+  pre_build:
+    commands:
+      - export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+      - export CDK_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      - mkdir -p ~/.cdk/cache/
+
+  build:
+    commands:
+      - cdk deploy s3bucket --require-approval never
+
+  post_build:
+    commands:
+      - echo "Infrastructure deployment completed"
+
+
+
+
+
+
+
+
+
+
