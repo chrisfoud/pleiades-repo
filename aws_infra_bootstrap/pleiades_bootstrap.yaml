@@ -105,10 +105,10 @@ Resources:
                   - codestar-connections:UseConnection
                 Resource: '*'
 
-  UnitTestCodePipeline:
+  PleiadesCodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: UnitTestCodePipeline
+      Name: PleiadesCodePipeline
       RoleArn: 
         Fn::GetAtt: [CodePipelineServiceRole, Arn]
       ArtifactStore:
@@ -230,7 +230,7 @@ Outputs:
   PipelineURL:
     Description: CodePipeline URL
     Value: 
-      Fn::Sub: "https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${UnitTestCodePipeline}"
+      Fn::Sub: "https://console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${PleiadesCodePipeline}"
   ConnectionARN:
     Description: Connection ARN
     Value: 
