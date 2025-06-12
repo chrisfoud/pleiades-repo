@@ -3,14 +3,29 @@ Description: AWS CloudFormation template to create a CodePipeline that fetches
   code from a GitHub repository.
 
 Parameters:
+  EnvName:
+    Type: String
+    Description: Enviroment name
+    Default: "ENV_NAME"
+
+  CommonName:
+    Type: String
+    Default: 'COMMON_NAME'
+    Description: Company Name.
+
+  ApplicationName:
+    Type: String
+    Default: 'APPLICATION_NAME'
+    Description: Name of the application.
+    
   GitHubRepositoryOwner:
     Type: String
-    Default: chrisfoud
+    Default: Repository Owner
     Description: Owner of the GitHub repository.
 
   GitHubRepositoryName:
     Type: String
-    Default: pleiades-repo
+    Default: Repository Name
     Description: Name of the GitHub repository.
 
   GitHubBranch:

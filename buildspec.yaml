@@ -12,6 +12,17 @@ phases:
 
   pre_build:
     commands:
+      - echo "" >> common_config.py
+      - echo ${EnvName}
+      - echo "Add env variable to config"
+      - echo "ENV = '${EnvName}'" >> common_config.py
+      - echo ${ApplicationName}
+      - echo "Add env variable to config"
+      - echo "APP_NAME = '${ApplicationName}'" >> common_config.py
+      - echo ${CommonName}
+      - echo "Add env variable to config"
+      - echo "COMMON_NAME = '${CommonName}'" >> common_config.py
+      - cat common_config.py
       - export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
       - export CDK_DEFAULT_REGION=$AWS_DEFAULT_REGION
       - mkdir -p ~/.cdk/cache/
