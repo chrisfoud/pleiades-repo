@@ -136,8 +136,14 @@ class VpcAlbEc2Stack(Stack):
             "ApplicationTargetGroup",
             vpc=self.vpc,
             port=app_config.ALB.LISTENER_PORT,
-            targets=self.ec2_instances # Add all created EC2 instances as targets
+            protocol=elbv2.ApplicationProtocol.HTTP,
+            targets=[] # Initialize with empty targets, we'll add them separately
         )
+        
+        # Register EC2 instances with the target group
+        for i, instance in enumerate(self.ec2_instances):
+            self.target_group.add_target(elbv2.InstanceTarget(instance))
+            
         Tags.of(self.target_group).add("Name", f"{app_config.ALB.ALB_NAME}-TG")
 
 
