@@ -5,6 +5,7 @@ from aws_cdk import (
     CfnOutput,
     aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as elbv2,
+    aws_elasticloadbalancingv2_targets as targets,
     aws_iam as iam,
 )
 from constructs import Construct
@@ -142,7 +143,7 @@ class VpcAlbEc2Stack(Stack):
         
         # Register EC2 instances with the target group
         for i, instance in enumerate(self.ec2_instances):
-            self.target_group.add_target(elbv2.InstanceTarget(instance))
+            self.target_group.add_target(targets.InstanceTarget(instance))
             
         Tags.of(self.target_group).add("Name", f"{app_config.ALB.ALB_NAME}-TG")
 
