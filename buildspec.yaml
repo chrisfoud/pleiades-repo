@@ -6,8 +6,7 @@ phases:
       nodejs: 16
 
     commands:
-      - npm install -g aws-cdk@2.51.0
-      - node --no-warnings
+      - npm install -g aws-cdk@1.132.0
       - python -m pip install --upgrade pip
       - python -m pip install -r requirements.txt
 
@@ -31,7 +30,7 @@ phases:
 
   build:
     commands:
-      - NODE_OPTIONS=--experimental-wasm-reftypes cdk deploy VpcAlbEc2Stack --require-approval never
+      - cdk deploy VpcAlbEc2Stack --require-approval never
 
   post_build:
     commands:
