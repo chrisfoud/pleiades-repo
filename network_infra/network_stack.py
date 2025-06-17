@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
     aws_elasticloadbalancingv2_targets as targets,
     aws_iam as iam,
+    aws_ssm as ssm,
 )
 from constructs import Construct
 from . import config
@@ -28,6 +29,14 @@ class NetworkStack(Stack):
                 vpc_config.PUBLIC_SUBNET_MASK,
                 vpc_config.PRIVATE_SUBNET_MASK,
                 vpc_config.ISOLATED_SUBNET_MASK
+            )
+            
+            # Add CloudFormation outputs for VPC ID
+            CfnOutput(
+                self, f"{vpc_config.VPV_ID}-id-output",
+                value=vpc.vpc_id,
+                description=f"VPC ID for {vpc_config.VPC_NAME}",
+                export_name=f"{config.ENV}-{config.COMMON_NAME}-vpc-id"
             )
         
 
@@ -59,5 +68,43 @@ class NetworkStack(Stack):
             ]
         )
         Tags.of(self.vpc).add("Name", vpc_name)
+        
+        # Create SSM parameters for VPC ID
+        ssm.StringParameter(
+            self, f"{identifier}-vpc-id-param",
+            parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/id",
+            string_value=self.vpc.vpc_id,
+            description=f"VPC ID for {vpc_name}"
+        )
+        
+        # Create SSM parameters for public subnet IDs
+        for i, subnet in enumerate(self.vpc.public_subnets):
+            ssm.StringParameter(
+                self, f"{identifier}-public-subnet-{i}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/public-subnet-{i}/id",
+                string_value=subnet.subnet_id,
+                description=f"Public Subnet {i} ID for {vpc_name}"
+            )
+        
+        # Create SSM parameters for private subnet IDs
+        for i, subnet in enumerate(self.vpc.private_subnets):
+            ssm.StringParameter(
+                self, f"{identifier}-private-subnet-{i}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/private-subnet-{i}/id",
+                string_value=subnet.subnet_id,
+                description=f"Private Subnet {i} ID for {vpc_name}"
+            )
+        
+        # Create SSM parameters for isolated subnet IDs
+        for i, subnet in enumerate(self.vpc.isolated_subnets):
+            ssm.StringParameter(
+                self, f"{identifier}-isolated-subnet-{i}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/isolated-subnet-{i}/id",
+                string_value=subnet.subnet_id,
+                description=f"Isolated Subnet {i} ID for {vpc_name}"
+            )
+            
+        # Return the VPC
+        return self.vpc
 
 
