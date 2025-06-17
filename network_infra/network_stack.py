@@ -58,6 +58,6 @@ class NetworkStack(Stack):
                 )
             ]
         )
-        Tags.of(self.vpc).add("Name", config.VPC_NAME)
+        Tags.of(self.vpc).add("Name", vpc_name)
 
 
