@@ -72,7 +72,7 @@ class NetworkStack(Stack):
         # Create SSM parameters for VPC ID
         ssm.StringParameter(
             self, f"{identifier}-vpc-id-param",
-            parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/id",
+            parameter_name=f"/{vpc_name}/id",
             string_value=self.vpc.vpc_id,
             description=f"VPC ID for {vpc_name}"
         )
@@ -81,7 +81,7 @@ class NetworkStack(Stack):
         for i, subnet in enumerate(self.vpc.public_subnets):
             ssm.StringParameter(
                 self, f"{identifier}-public-subnet-{i+1}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/public-subnet-{i+1}/id",
+                parameter_name=f"/{vpc_name}/public-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Public Subnet {i+1} ID for {vpc_name}"
             )
@@ -90,7 +90,7 @@ class NetworkStack(Stack):
         for i, subnet in enumerate(self.vpc.private_subnets):
             ssm.StringParameter(
                 self, f"{identifier}-private-subnet-{i+1}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/private-subnet-{i+1}/id",
+                parameter_name=f"/{vpc_name}/private-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Private Subnet {i+1} ID for {vpc_name}"
             )
@@ -99,7 +99,7 @@ class NetworkStack(Stack):
         for i, subnet in enumerate(self.vpc.isolated_subnets):
             ssm.StringParameter(
                 self, f"{identifier}-isolated-subnet-{i+1}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/isolated-subnet-{i+1}/id",
+                parameter_name=f"/{vpc_name}/isolated-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Isolated Subnet {i+1} ID for {vpc_name}"
             )
