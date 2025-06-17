@@ -37,7 +37,7 @@ class NetworkStack(Stack):
         self.vpc = ec2.Vpc(
             self, identifier,
             vpc_name=vpc_name,
-            cidr= vpc_cidr,
+            ip_addresses=ec2.IpAddresses.cidr(vpc_cidr),
             max_azs= vpc_maz_azs,
             nat_gateways= nat_gw,
             subnet_configuration=[
