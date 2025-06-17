@@ -21,9 +21,9 @@ class VpcConfig:
     VPC_CIDR: str
     VPC_MAX_AZS: int
     NAT_GATEWAY: int
-    PUBLIC_SUBNET_CIDR: List[str]
-    PRIVATE_SUBNET_CIDR: List[str]
-    ISOLATED_SUBNET_CIDR: List[str]
+    PUBLIC_SUBNET_CIDR: str
+    PRIVATE_SUBNET_CIDR: str
+    ISOLATED_SUBNET_CIDR: str
 
 VPC_1 = VpcConfig(
     VPV_ID=f'{ENV}{COMMON_NAME}Vpc',
@@ -32,9 +32,9 @@ VPC_1 = VpcConfig(
     VPC_CIDR='10.0.0.0/16',
     VPC_MAX_AZS=3,
     NAT_GATEWAY=1,
-    PUBLIC_SUBNET_CIDR=['10.0.0.0/24', '10.0.1.0/24'],
-    PRIVATE_SUBNET_CIDR=['10.0.2.0/24', '10.0.3.0/24'],
-    ISOLATED_SUBNET_CIDR=['10.0.4.0/24', '10.0.5.0/24']
+    PUBLIC_SUBNET_CIDR='10.0.0.0/24',
+    PRIVATE_SUBNET_CIDR='10.0.2.0/24',
+    ISOLATED_SUBNET_CIDR='10.0.4.0/24'
 )
 
 VPC_LIST = [VPC_1]
