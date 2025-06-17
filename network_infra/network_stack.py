@@ -80,28 +80,28 @@ class NetworkStack(Stack):
         # Create SSM parameters for public subnet IDs
         for i, subnet in enumerate(self.vpc.public_subnets):
             ssm.StringParameter(
-                self, f"{identifier}-public-subnet-{i}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/public-subnet-{i}/id",
+                self, f"{identifier}-public-subnet-{i+1}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/public-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
-                description=f"Public Subnet {i} ID for {vpc_name}"
+                description=f"Public Subnet {i+1} ID for {vpc_name}"
             )
         
         # Create SSM parameters for private subnet IDs
         for i, subnet in enumerate(self.vpc.private_subnets):
             ssm.StringParameter(
-                self, f"{identifier}-private-subnet-{i}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/private-subnet-{i}/id",
+                self, f"{identifier}-private-subnet-{i+1}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/private-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
-                description=f"Private Subnet {i} ID for {vpc_name}"
+                description=f"Private Subnet {i+1} ID for {vpc_name}"
             )
         
         # Create SSM parameters for isolated subnet IDs
         for i, subnet in enumerate(self.vpc.isolated_subnets):
             ssm.StringParameter(
-                self, f"{identifier}-isolated-subnet-{i}-param",
-                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/isolated-subnet-{i}/id",
+                self, f"{identifier}-isolated-subnet-{i+1}-param",
+                parameter_name=f"/{config.ENV}/{config.COMMON_NAME}/vpc/isolated-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
-                description=f"Isolated Subnet {i} ID for {vpc_name}"
+                description=f"Isolated Subnet {i+1} ID for {vpc_name}"
             )
             
         # Return the VPC
