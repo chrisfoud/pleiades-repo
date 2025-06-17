@@ -55,7 +55,7 @@ class NetworkStack(Stack):
                 ),
                 ec2.SubnetConfiguration(
                     name="Isolated",
-                    subnet_type=ec2.SubnetType.ISOLATED,
+                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
                     cidr_mask= isolated_subnet_mask
                 )
             ]
