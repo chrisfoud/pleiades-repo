@@ -26,14 +26,14 @@ class NetworkStack(Stack):
                 vpc_config.VPC_CIDR,
                 vpc_config.VPC_MAX_AZS,
                 vpc_config.NAT_GATEWAY,
-                vpc_config.PUBLIC_SUBNET_CIDR,
-                vpc_config.PRIVATE_SUBNET_CIDR,
-                vpc_config.ISOLATED_SUBNET_CIDR
+                vpc_config.PUBLIC_SUBNET_MASK,
+                vpc_config.PRIVATE_SUBNET_MASK,
+                vpc_config.ISOLATED_SUBNET_MASK
             )
         
 
     
-    def create_vpc(self ,identifier ,vpc_name , internet_gateway, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_cidr, private_subnet_cidr, isolated_subnet_cidr):
+    def create_vpc(self ,identifier ,vpc_name , internet_gateway, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
 
         self.vpc = ec2.Vpc(
             self, identifier,
@@ -46,17 +46,17 @@ class NetworkStack(Stack):
                 ec2.SubnetConfiguration(
                     name="Public",
                     subnet_type=ec2.SubnetType.PUBLIC,
-                    cidr_mask= public_subnet_cidr
+                    cidr_mask= public_subnet_mask
                 ),
                 ec2.SubnetConfiguration(
                     name="Private",
                     subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, # Instances need egress to download packages
-                    cidr_mask= private_subnet_cidr
+                    cidr_mask= private_subnet_mask
                 ),
                 ec2.SubnetConfiguration(
                     name="Isolated",
                     subnet_type=ec2.SubnetType.ISOLATED,
-                    cidr_mask= isolated_subnet_cidr
+                    cidr_mask= isolated_subnet_mask
                 )
             ]
         )
