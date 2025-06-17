@@ -22,7 +22,6 @@ class NetworkStack(Stack):
             vpc = self.create_vpc(
                 vpc_config.VPV_ID,
                 vpc_config.VPC_NAME,
-                vpc_config.INTERNET_GATEWAY,
                 vpc_config.VPC_CIDR,
                 vpc_config.VPC_MAX_AZS,
                 vpc_config.NAT_GATEWAY,
@@ -33,12 +32,11 @@ class NetworkStack(Stack):
         
 
     
-    def create_vpc(self ,identifier ,vpc_name , internet_gateway, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
+    def create_vpc(self ,identifier ,vpc_name , vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
 
         self.vpc = ec2.Vpc(
             self, identifier,
             vpc_name=vpc_name,
-            create_internet_gateway=internet_gateway,
             cidr= vpc_cidr,
             max_azs= vpc_maz_azs,
             nat_gateways= nat_gw,

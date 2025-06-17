@@ -17,7 +17,6 @@ class VpcConfig:
 
     VPV_ID: str
     VPC_NAME: str
-    INTERNET_GATEWAY: str
     VPC_CIDR: str
     VPC_MAX_AZS: int
     NAT_GATEWAY: int
@@ -28,7 +27,6 @@ class VpcConfig:
 VPC_1 = VpcConfig(
     VPV_ID=f'{ENV}{COMMON_NAME}Vpc',
     VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
-    INTERNET_GATEWAY=f'{ENV}-{COMMON_NAME}-igw',
     VPC_CIDR='10.0.0.0/16',
     VPC_MAX_AZS=3,
     NAT_GATEWAY=1,
