@@ -30,7 +30,7 @@ phases:
 
   build:
     commands:
-      - cdk deploy VpcAlbEc2Stack --require-approval never
+      - cdk deploy NetworkStack --require-approval never
 
   post_build:
     commands:

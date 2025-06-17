@@ -9,7 +9,7 @@ from aws_cdk import (
     aws_iam as iam,
 )
 from constructs import Construct
-from . import config # Import from the same directory
+from ..network_infra import config # Import from the same directory
 
 class VpcAlbEc2Stack(Stack):
 
