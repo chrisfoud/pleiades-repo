@@ -1,4 +1,9 @@
 version: 0.2
+env:
+  # Specify a newer CodeBuild image that has a modern GLIBC.
+  # Standard:7.0 is based on Ubuntu 22.04 and should resolve your issue.
+  image: aws/codebuild/standard:7.0 
+  
 phases:
   install:
     runtime-versions:
