@@ -25,8 +25,8 @@ class VpcConfig:
     ISOLATED_SUBNET_MASK: int
 
 VPC_1 = VpcConfig(
-    VPV_ID=f'{ENV}{COMMON_NAME}Vpc',
-    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    VPV_ID=f'{ENV}Vpc',
+    VPC_NAME=f'{ENV}-vpc',
     VPC_CIDR='10.0.0.0/16',
     VPC_MAX_AZS=3,
     NAT_GATEWAY=1,
