@@ -3,10 +3,10 @@ phases:
   install:
     runtime-versions:
       python: 3.9
-      nodejs: 18
+      nodejs: 14
 
     commands:
-      - npm install -g aws-cdk@2.80.0
+      - npm install -g aws-cdk
       - python -m pip install --upgrade pip
       - python -m pip install -r requirements.txt
 
@@ -30,7 +30,7 @@ phases:
 
   build:
     commands:
-      - cdk deploy NetworkStack --require-approval never --no-wasm
+      - cdk deploy NetworkStack --require-approval never
 
   post_build:
     commands:
