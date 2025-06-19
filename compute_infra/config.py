@@ -28,6 +28,7 @@ class EC2Config:
     EC2_INSTANCE_TYPE: str
     EC2_SG_ID: str
     INSTANCE_IDS: List[str]
+    AMI_REGION: str
     AMI_ID: str
     EC2_ALB: str
 
@@ -56,8 +57,8 @@ EC2_EXCHANGE_1 = EC2Config(
     EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',
     EC2_INSTANCE_TYPE='t2.micro',
     EC2_SG_ID= None,
-    AMI_ID='ami-016c25765a1fa5a76',
     AMI_REGION='eu-central-1',
+    AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb'  # Specify ALB name or None
 )
