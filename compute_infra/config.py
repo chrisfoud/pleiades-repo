@@ -57,6 +57,7 @@ EC2_EXCHANGE_1 = EC2Config(
     EC2_INSTANCE_TYPE='t2.micro',
     EC2_SG_ID= None,
     AMI_ID='ami-016c25765a1fa5a76',
+    AMI_REGION='eu-central-1',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb'  # Specify ALB name or None
 )

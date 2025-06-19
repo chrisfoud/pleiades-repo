@@ -69,14 +69,15 @@ class ComputeStack(Stack):
         for compute_config in config.EC2_LIST:
             vpc_data = vpcs[compute_config.EC2_VPC]
             instance = self.create_ec2(
-            compute_config.EC2_NAME,
-            vpc_data['vpc'],
-            vpc_data['private_subnet_ids'],
-            compute_config.EC2_INSTANCE_TYPE,
-            compute_config.AMI_ID,
-            compute_config.EC2_ALB,
-            alb_target_groups 
-        )
+                compute_config.EC2_NAME,
+                vpc_data['vpc'],
+                vpc_data['private_subnet_ids'],
+                compute_config.EC2_INSTANCE_TYPE,
+                compute_config.AMI_REGION,
+                compute_config.AMI_ID,
+                compute_config.EC2_ALB,
+                alb_target_groups 
+            )
 
 
     def importVPC(self, identifier, imported_vpc_id):
@@ -190,7 +191,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_id, ec2_alb, alb_target_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_region, ami_id, ec2_alb, alb_target_groups):
         ec2_security_group = ec2.SecurityGroup(
             self,
             f"{ec2_name}-sg",
@@ -198,11 +199,20 @@ class ComputeStack(Stack):
             allow_all_outbound=True,
             description=f"Security group for {ec2_name}"
         )
+        
         ec2_security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(3389),
-            "Allow SSH traffic"
+            "Allow RDP traffic"
         )
+        
+        if ec2_alb is not None:
+            alb_sg_id = f"{ec2_alb}-sg"  # Assuming this naming pattern
+            ec2_security_group.add_ingress_rule(
+                ec2.Peer.security_group_id(alb_sg_id),
+                ec2.Port.tcp(80),
+                "Allow HTTP traffic from ALB"
+            )
 
         private_subnets = []
         if private_subnet_ids:
@@ -210,14 +220,14 @@ class ComputeStack(Stack):
                 private_subnets.append(ec2.Subnet.from_subnet_id(self, f"{ec2_name}-PrivateSubnet{i+1}", subnet_id))
 
         instance = ec2.Instance(
-            self,
-            ec2_name,
-            vpc=vpc,
-            instance_type=ec2.InstanceType(instance_type),
-            machine_image=ec2.MachineImage.generic_windows({'us-east-1': ami_id}),
-            security_group=ec2_security_group,
-            vpc_subnets=ec2.SubnetSelection(subnets=private_subnets)
-        )
+                self,
+                ec2_name,
+                vpc=vpc,
+                instance_type=ec2.InstanceType(instance_type),
+                machine_image=ec2.MachineImage.generic_windows({ami_region: ami_id}),
+                security_group=ec2_security_group,
+                vpc_subnets=ec2.SubnetSelection(subnets=private_subnets)
+            )
 
         if ec2_alb is not None:
             target_group = alb_target_groups[ec2_alb]
