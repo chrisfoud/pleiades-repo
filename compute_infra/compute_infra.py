@@ -84,7 +84,7 @@ class ComputeStack(Stack):
                 f"{alb_name}-sg",
                 vpc=vpc,
                 allow_all_outbound=True,
-                SG_desc=f"Security group for {alb_name}"
+                description=f"Security group for {alb_name}"
             )
             alb_security_group.add_ingress_rule(
                 ec2.Peer.any_ipv4(),
