@@ -31,4 +31,4 @@ ALB_EXCHANGE = ALBConfig(
     SG_DESC='Description'
 )
 
-VPC_LIST = [ALB_EXCHANGE]
+ALB_LIST = [ALB_EXCHANGE]
