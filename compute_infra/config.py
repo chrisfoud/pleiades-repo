@@ -16,18 +16,27 @@ APP_NAME = common_config.APP_NAME
 class ALBConfig:
     ALB_NAME: str
     ALB_CFN_ID: str
-    VPC_NAME: str
+    ALB_VPC: str
     ALB_SG_ID: str
     CERTIFICATE_ARN: str
     SG_DESC: str
 
+@dataclass
+class EC2Config:
+    EC2_NAME: str
+    EC2_VPC: str
+    EC2_INSTANCE_TYPE: str
+    EC2_SG_ID: str
+    INSTANCE_IDS: List[str]
+    AMI_ID: str
+    EC2_ALB: str
 
 
 
 ALB_EXCHANGE = ALBConfig(
     ALB_NAME=f'{ENV}-{COMMON_NAME}-alb',
     ALB_CFN_ID='alb_cfn_id',
-    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    ALB_VPC=f'{ENV}-{COMMON_NAME}-vpc',
     ALB_SG_ID= None,
     CERTIFICATE_ARN= None,
     SG_DESC='Description'
@@ -42,4 +51,17 @@ ALB_EXCHANGE = ALBConfig(
 #     SG_DESC='Description'
 # )
 
+EC2_EXCHANGE_1 = EC2Config(
+    EC2_NAME=f'{ENV}-{COMMON_NAME}-ec2',
+    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    EC2_INSTANCE_TYPE='t2.micro',
+    EC2_SG_ID= None,
+    AMI_ID='ami-016c25765a1fa5a76',
+    INSTANCE_IDS= [],
+    EC2_ALB=f'{ENV}-{COMMON_NAME}-alb'  # Specify ALB name or None
+)
+
+
 ALB_LIST = [ALB_EXCHANGE]
+
+EC2_LIST = [EC2_EXCHANGE_1]

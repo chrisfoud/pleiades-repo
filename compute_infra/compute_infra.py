@@ -22,6 +22,7 @@ class ComputeStack(Stack):
 
 
         vpcs = {}
+        alb_target_groups = {}
         
         for i, vpc_config in enumerate(network_config.VPC_LIST):
             vpc_id = ssm.StringParameter.value_from_lookup(self, f"/{vpc_config.VPC_NAME}/id")
@@ -51,17 +52,32 @@ class ComputeStack(Stack):
                 'private_subnet_ids': private_subnet_ids
             }
 
+        
 
         for compute_config in config.ALB_LIST:
-            vpc_data = vpcs[compute_config.VPC_NAME]
-            alb = self.create_alb(
+            vpc_data = vpcs[compute_config.ALB_VPC]
+            alb, target_group= self.create_alb(
                 compute_config.ALB_NAME,
                 vpc_data['vpc'],
                 vpc_data['public_subnet_ids'],
                 compute_config.ALB_SG_ID,
                 compute_config.CERTIFICATE_ARN,
                 compute_config.SG_DESC
-            )              
+            )
+            alb_target_groups[compute_config.ALB_NAME] = target_group
+
+        for compute_config in config.EC2_LIST:
+            vpc_data = vpcs[compute_config.EC2_VPC]
+            instance = self.create_ec2(
+            compute_config.EC2_NAME,
+            vpc_data['vpc'],
+            vpc_data['private_subnet_ids'],
+            compute_config.EC2_INSTANCE_TYPE,
+            compute_config.AMI_ID,
+            compute_config.EC2_ALB,
+            alb_target_groups 
+        )
+
 
     def importVPC(self, identifier, imported_vpc_id):
         self.vpc_lookup = ec2.Vpc.from_lookup(
@@ -69,6 +85,10 @@ class ComputeStack(Stack):
             vpc_id = imported_vpc_id,
         )
         return self.vpc_lookup
+
+###############################################################################################################
+# ALB
+###############################################################################################################
 
     def create_alb(self, alb_name, vpc, public_subnet_ids, sg_id=None, certificate_arn=None, SG_desc=None):
 
@@ -166,42 +186,43 @@ class ComputeStack(Stack):
         
         return alb, target_group
         
-        # def create_ec2(self, instance_id, instance_name, instance_type, vpc_id, subnet_id, sg_id, key_name, user_data, role_name, role_policy, role_policy_name, role_policy_desc):
+###############################################################################################################
+# EC2
+###############################################################################################################
 
-        #     # Create an IAM role for the EC2 instance
-        #     instance_role = iam.Role(
-        #         self,
-        #         role_name,
-        #         assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
-        #         role_name=role_name,
-        #     )
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_id, ec2_alb, alb_target_groups):
+        ec2_security_group = ec2.SecurityGroup(
+            self,
+            f"{ec2_name}-sg",
+            vpc=vpc,
+            allow_all_outbound=True,
+            description=f"Security group for {ec2_name}"
+        )
+        ec2_security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(22),
+            "Allow SSH traffic"
+        )
 
-        #     # Add a policy to the IAM role
-        #     instance_role.add_managed_policy(
-        #         iam.ManagedPolicy.from_aws_managed_policy_name(role_policy)
-        #     )
+        private_subnets = []
+        if private_subnet_ids:
+            for i, subnet_id in enumerate(private_subnet_ids):
+                private_subnets.append(ec2.Subnet.from_subnet_id(self, f"{ec2_name}-PrivateSubnet{i+1}", subnet_id))
 
-        #     # Create an EC2 instance
-        #     instance = ec2.Instance(
-        #         self,
-        #         instance_id,
-        #         instance_type=ec2.InstanceType(instance_type),
-        #         machine_image=ec2.MachineImage.latest_amazon_linux2(),
-        #         vpc=ec2.Vpc.from_lookup(self, "ImportedVPC", vpc_id),
-        #         vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-        #         security_group=ec2.SecurityGroup.from_security_group_id(self, sg_id, sg_id),
-        #         key_name=key_name,
-        #         user_data=ec2.UserData.custom(user_data),
-        #         role=instance_role
-        #     )
+        instance = ec2.Instance(
+            self,
+            ec2_name,
+            vpc=vpc,
+            instance_type=ec2.InstanceType(instance_type),
+            machine_image=ec2.MachineImage.generic_linux({'us-east-1': ami_id}),
+            security_group=ec2_security_group,
+            vpc_subnets=ec2.SubnetSelection(subnets=private_subnets)
+        )
 
-        #     # Create an SSM parameter for the EC2 instance ID
-        #     ssm.StringParameter(
-        #         self,
-        #         f"{instance_name}-param",
-        #         parameter_name=f"/{instance_name}/id",
-        #         string_value=instance.instance_id,
-        #         description=f"EC2 Instance ID for {instance_name}"
-        #     )
+        if ec2_alb is not None:
+            target_group = alb_target_groups[ec2_alb]
+            target_group.add_target(targets.InstanceTarget(instance.instance_id))
 
-        #     return instance
+        Tags.of(instance).add("Name", ec2_name)
+
+        return instance
