@@ -44,14 +44,11 @@ class ComputeStack(Stack):
                 )
                 public_subnet_ids.append(subnet_id)
 
-            # Get isolated subnets for this VPC
-            isolated_subnet_ids = []
-            for j in range(1, 4):  # Assuming 3 AZs
-                subnet_id = ssm.StringParameter.value_from_lookup(
-                    self, 
-                    f"/{vpc_config.VPC_NAME}/isolated-subnet-{j}/id"
-                )
-                isolated_subnet_ids.append(subnet_id)
+            vpcs[vpc_config.VPC_NAME] = {
+                'vpc': vpc,
+                'public_subnet_ids': public_subnet_ids,
+                'private_subnet_ids': private_subnet_ids
+            }
 
 
         for compute_config in config.ALB_LIST:
