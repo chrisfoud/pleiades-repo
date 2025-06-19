@@ -259,7 +259,7 @@ class ComputeStack(Stack):
 
         if ec2_alb is not None:
             target_group = alb_target_groups[ec2_alb]
-            target_group.add_target(targets.InstanceTarget(instance.instance_id))
+            target_group.add_target(targets.InstanceTarget(instance))
 
         Tags.of(instance).add("Name", ec2_name)
 
