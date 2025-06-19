@@ -36,8 +36,8 @@ VPC_EXCHANGE = VpcConfig(
 )
 
 VPC_DEV = VpcConfig(
-    VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
-    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    VPV_ID=f'dev-{COMMON_NAME}-vpc',
+    VPC_NAME=f'dev-{COMMON_NAME}-vpc',
     VPC_CIDR='10.10.0.0/16',
     VPC_MAX_AZS=3,
     NAT_GATEWAY=1,

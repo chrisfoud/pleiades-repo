@@ -12,7 +12,7 @@ from constructs import Construct
 from . import config
 from network_infra import config as network_config
 
-class Compute(Stack):
+class ComputeStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         
