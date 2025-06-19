@@ -111,7 +111,7 @@ class ComputeStack(Stack):
             security_group=alb_security_group,
             vpc_subnets=ec2.SubnetSelection(subnets=public_subnets)
         )
-        Tags.of(alb, "Name", alb_name)
+        Tags.of(alb).add("Name", alb_name)
 
         target_group = elbv2.ApplicationTargetGroup(
             self,
