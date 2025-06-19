@@ -2,6 +2,7 @@ from aws_cdk import (
     Stack,
     Tags,
     CfnOutput,
+    Duration,
     aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as elbv2,
     aws_elasticloadbalancingv2_targets as targets,
@@ -122,8 +123,8 @@ class ComputeStack(Stack):
             health_check=elbv2.HealthCheck(
                 path="/",
                 healthy_http_codes="200",
-                interval=ec2.Duration.seconds(30),
-                timeout=ec2.Duration.seconds(5)
+                interval=Duration.seconds(30),
+                timeout=Duration.seconds(5)
             )
         )
         
