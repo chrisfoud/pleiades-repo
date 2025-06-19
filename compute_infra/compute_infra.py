@@ -23,6 +23,7 @@ class ComputeStack(Stack):
 
         vpcs = {}
         alb_target_groups = {}
+        alb_security_groups = {}
         
         for i, vpc_config in enumerate(network_config.VPC_LIST):
             vpc_id = ssm.StringParameter.value_from_lookup(self, f"/{vpc_config.VPC_NAME}/id")
@@ -55,7 +56,7 @@ class ComputeStack(Stack):
         
         for compute_config in config.ALB_LIST:
             vpc_data = vpcs[compute_config.ALB_VPC]
-            alb, target_group= self.create_alb(
+            alb, target_group, alb_sg= self.create_alb(
                 compute_config.ALB_NAME,
                 vpc_data['vpc'],
                 vpc_data['public_subnet_ids'],
@@ -64,6 +65,7 @@ class ComputeStack(Stack):
                 compute_config.SG_DESC
             )
             alb_target_groups[compute_config.ALB_NAME] = target_group
+            alb_security_groups[compute_config.ALB_NAME] = alb_sg
 
         for compute_config in config.EC2_LIST:
             vpc_data = vpcs[compute_config.EC2_VPC]
@@ -75,7 +77,8 @@ class ComputeStack(Stack):
                 compute_config.AMI_REGION,
                 compute_config.AMI_ID,
                 compute_config.EC2_ALB,
-                alb_target_groups 
+                alb_target_groups,
+                alb_security_groups
             )
 
 
@@ -184,13 +187,13 @@ class ComputeStack(Stack):
             description=f"Target Group ARN for {alb_name}"
         )
         
-        return alb, target_group
+        return alb, target_group, alb_security_group
         
 ###############################################################################################################
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_region, ami_id, ec2_alb, alb_target_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_region, ami_id, ec2_alb, alb_target_groups, alb_security_groups):
         ec2_security_group = ec2.SecurityGroup(
             self,
             f"{ec2_name}-sg",
@@ -206,9 +209,9 @@ class ComputeStack(Stack):
         )
         
         if ec2_alb is not None:
-            alb_sg_id = f"{ec2_alb}-sg"  # Assuming this naming pattern
+            alb_sg = alb_security_groups[ec2_alb]
             ec2_security_group.add_ingress_rule(
-                ec2.Peer.security_group_id(alb_sg_id),
+                 ec2.Peer.security_group_id(alb_sg.security_group_id),
                 ec2.Port.tcp(80),
                 "Allow HTTP traffic from ALB"
             )
