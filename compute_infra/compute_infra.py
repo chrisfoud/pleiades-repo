@@ -53,7 +53,6 @@ class ComputeStack(Stack):
             }
 
         
-
         for compute_config in config.ALB_LIST:
             vpc_data = vpcs[compute_config.ALB_VPC]
             alb, target_group= self.create_alb(
