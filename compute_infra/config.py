@@ -28,8 +28,8 @@ ALB_EXCHANGE = ALBConfig(
     ALB_NAME=f'{ENV}-{COMMON_NAME}-alb',
     ALB_CFN_ID='alb_cfn_id',
     VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
-    ALB_SG_ID='alb_sg_id',
-    CERTIFICATE_ARN='certificate_arn',
+    ALB_SG_ID= None,
+    CERTIFICATE_ARN= None,
     SG_DESC='Description'
 )
 
