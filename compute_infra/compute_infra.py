@@ -159,7 +159,8 @@ class ComputeStack(Stack):
             protocol=elbv2.ApplicationProtocol.HTTP,
             target_type=elbv2.TargetType.INSTANCE,
             health_check=elbv2.HealthCheck(
-                protocol=elbv2.Protocol.TCP,
+                path="/",
+                protocol=elbv2.Protocol.HTTP,
                 port="80",
                 interval=Duration.seconds(30),
                 timeout=Duration.seconds(10),
@@ -250,6 +251,11 @@ class ComputeStack(Stack):
                     )
                 )
 
+        user_data = ec2.UserData.for_windows()
+        user_data.add_commands(
+            "powershell -Command \"Install-WindowsFeature -name Web-Server -IncludeManagementTools\""
+        )
+
         instance = ec2.Instance(
                 self,
                 ec2_name,
@@ -258,7 +264,8 @@ class ComputeStack(Stack):
                 machine_image=ec2.MachineImage.generic_windows({ami_region: ami_id}),
                 security_group=ec2_security_group,
                 vpc_subnets=ec2.SubnetSelection(subnets=private_subnets),
-                key_name=key_name
+                key_name=key_name,
+                user_data=user_data
             )
 
         if ec2_alb is not None:
