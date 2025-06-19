@@ -31,6 +31,7 @@ class EC2Config:
     AMI_REGION: str
     AMI_ID: str
     EC2_ALB: str
+    EC2_KEYPAIR: str
 
 
 
@@ -61,6 +62,7 @@ EC2_EXCHANGE_1 = EC2Config(
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb'  # Specify ALB name or None
+    EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
 )
 
 

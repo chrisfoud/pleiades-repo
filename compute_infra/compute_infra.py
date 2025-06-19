@@ -78,6 +78,7 @@ class ComputeStack(Stack):
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
                 compute_config.AMI_ID,
+                compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
                 alb_target_groups,
                 alb_security_groups
@@ -158,10 +159,12 @@ class ComputeStack(Stack):
             protocol=elbv2.ApplicationProtocol.HTTP,
             target_type=elbv2.TargetType.INSTANCE,
             health_check=elbv2.HealthCheck(
-                path="/",
-                healthy_http_codes="200",
+                protocol=elbv2.Protocol.TCP,
+                port="80",
                 interval=Duration.seconds(30),
-                timeout=Duration.seconds(5)
+                timeout=Duration.seconds(10),
+                healthy_threshold_count=2,
+                unhealthy_threshold_count=5
             )
         )
         
@@ -207,7 +210,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, ec2_alb, alb_target_groups, alb_security_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
         ec2_security_group = ec2.SecurityGroup(
             self,
             f"{ec2_name}-sg",
@@ -254,7 +257,8 @@ class ComputeStack(Stack):
                 instance_type=ec2.InstanceType(instance_type),
                 machine_image=ec2.MachineImage.generic_windows({ami_region: ami_id}),
                 security_group=ec2_security_group,
-                vpc_subnets=ec2.SubnetSelection(subnets=private_subnets)
+                vpc_subnets=ec2.SubnetSelection(subnets=private_subnets),
+                key_name=key_name
             )
 
         if ec2_alb is not None:
