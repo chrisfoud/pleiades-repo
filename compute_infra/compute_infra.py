@@ -59,7 +59,7 @@ class ComputeStack(Stack):
                 vpc_data['public_subnet_ids'],
                 compute_config.ALB_SG_ID,
                 compute_config.CERTIFICATE_ARN,
-                compute_config.ALB_DESCR
+                compute_config.SG_DESC
             )              
 
     def importVPC(self, identifier, imported_vpc_id):
