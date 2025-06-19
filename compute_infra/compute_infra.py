@@ -60,6 +60,7 @@ class ComputeStack(Stack):
                 compute_config.ALB_NAME,
                 vpc_data['vpc'],
                 vpc_data['public_subnet_ids'],
+                compute_config.ALB_VPC,
                 compute_config.ALB_SG_ID,
                 compute_config.CERTIFICATE_ARN,
                 compute_config.SG_DESC
@@ -73,6 +74,7 @@ class ComputeStack(Stack):
                 compute_config.EC2_NAME,
                 vpc_data['vpc'],
                 vpc_data['private_subnet_ids'],
+                compute_config.EC2_VPC,
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
                 compute_config.AMI_ID,
@@ -93,7 +95,7 @@ class ComputeStack(Stack):
 # ALB
 ###############################################################################################################
 
-    def create_alb(self, alb_name, vpc, public_subnet_ids, sg_id=None, certificate_arn=None, SG_desc=None):
+    def create_alb(self, alb_name, vpc, public_subnet_ids,vpc_name, sg_id=None, certificate_arn=None, SG_desc=None):
 
         if sg_id:
             alb_security_group = ec2.SecurityGroup.from_security_group_id(
@@ -124,7 +126,19 @@ class ComputeStack(Stack):
         public_subnets = []
         if public_subnet_ids:
             for i, subnet_id in enumerate(public_subnet_ids):
-                public_subnets.append(ec2.Subnet.from_subnet_id(self, f"{alb_name}-PublicSubnet{i+1}", subnet_id))
+                az = ssm.StringParameter.value_from_lookup(
+                    self, 
+                    f"/{vpc_name}/public-subnet-{i+1}/az"
+                )
+                public_subnets.append(
+                    ec2.Subnet.from_subnet_attributes(
+                        self, 
+                        f"{alb_name}-PublicSubnet{i+1}",
+                        subnet_id=subnet_id,
+                        availability_zone=az
+                    )
+                )
+
 
         alb = elbv2.ApplicationLoadBalancer(
             self,
@@ -193,7 +207,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,instance_type, ami_region, ami_id, ec2_alb, alb_target_groups, alb_security_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, ec2_alb, alb_target_groups, alb_security_groups):
         ec2_security_group = ec2.SecurityGroup(
             self,
             f"{ec2_name}-sg",
@@ -219,7 +233,19 @@ class ComputeStack(Stack):
         private_subnets = []
         if private_subnet_ids:
             for i, subnet_id in enumerate(private_subnet_ids):
-                private_subnets.append(ec2.Subnet.from_subnet_id(self, f"{ec2_name}-PrivateSubnet{i+1}", subnet_id))
+                # Get AZ from SSM parameter
+                az = ssm.StringParameter.value_from_lookup(
+                    self, 
+                    f"/{vpc_name}/private-subnet-{i+1}/az"
+                )
+                private_subnets.append(
+                    ec2.Subnet.from_subnet_attributes(
+                        self, 
+                        f"{ec2_name}-PrivateSubnet{i+1}",
+                        subnet_id=subnet_id,
+                        availability_zone=az
+                    )
+                )
 
         instance = ec2.Instance(
                 self,
