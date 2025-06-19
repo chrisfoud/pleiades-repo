@@ -6,26 +6,26 @@ Parameters:
   EnvName:
     Type: String
     Description: Enviroment name
-    Default: "ENV_NAME"
+    Default: "prod"
 
   CommonName:
     Type: String
-    Default: 'COMMON_NAME'
+    Default: pleiades
     Description: Company Name.
 
   ApplicationName:
     Type: String
-    Default: 'APPLICATION_NAME'
+    Default: exchange
     Description: Name of the application.
     
   GitHubRepositoryOwner:
     Type: String
-    Default: Repository Owner
+    Default: chrisfoud
     Description: Owner of the GitHub repository.
 
   GitHubRepositoryName:
     Type: String
-    Default: Repository Name
+    Default: pleiades-repo
     Description: Name of the GitHub repository.
 
   GitHubBranch:
@@ -33,19 +33,9 @@ Parameters:
     Default: main
     Description: Branch of the GitHub repository to use as the source.
 
-  ArtifactBucket:
-    Type: String
-    Description: The S3 bucket to store build artifacts.
 
 Resources:
-  MyArtifactS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName:
-        Ref: ArtifactBucket
-      VersioningConfiguration:
-        Status: Enabled
-  
+
   CodePipelineConnection:
     Type: AWS::CodeStarConnections::Connection
     Properties:
@@ -150,7 +140,7 @@ Resources:
                   Ref: GitHubBranch
               RunOrder: 1
         
-        - Name: Build
+        - Name: Network-Build
           Actions:
             - Name: BuildAction
               ActionTypeId:
@@ -160,11 +150,28 @@ Resources:
                 Version: 1
               Configuration:
                 ProjectName: 
-                  Ref: CodeBuildProject
+                  Ref: CodeBuildNetwork
               InputArtifacts:
                 - Name: SourceArtifact
               OutputArtifacts:
-                - Name: BuildArtifact
+                - Name: Network-BuildArtifact
+              RunOrder: 1
+
+        - Name: Compute-Build
+          Actions:
+            - Name: BuildAction
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: 
+                  Ref: CodeBuildCompute
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: Compute-BuildArtifact
               RunOrder: 1
 
   # Add CodeBuild Project and Role
@@ -241,18 +248,50 @@ Resources:
                   - "arn:aws:iam::*:role/cdk-*"
 
 
-  CodeBuildProject:
+  CodeBuildNetwork:
     Type: AWS::CodeBuild::Project
     Properties:
       Name: 
-        Fn::Sub: "${AWS::StackName}-build"
+        Fn::Sub: "${AWS::StackName}-network-build"
       ServiceRole: 
         Fn::GetAtt: [CodeBuildServiceRole, Arn]
       Artifacts:
         Type: CODEPIPELINE
       Source:
         Type: CODEPIPELINE
-        BuildSpec: buildspec.yaml
+        BuildSpec: network-buildspec.yaml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+        EnvironmentVariables:
+          - Name: EnvName
+            Type: PLAINTEXT
+            Value: !Sub '${EnvName}'
+          - Name: GitHubRepositoryName
+            Type: PLAINTEXT
+            Value: !Sub '${GitHubRepositoryName}'
+          - Name: ApplicationName
+            Type: PLAINTEXT
+            Value: !Sub '${ApplicationName}'   
+          - Name: CommonName
+            Type: PLAINTEXT
+            Value: !Sub '${CommonName}'
+      Cache:
+        Type: NO_CACHE
+
+  CodeBuildCompute:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: 
+        Fn::Sub: "${AWS::StackName}-compute-build"
+      ServiceRole: 
+        Fn::GetAtt: [CodeBuildServiceRole, Arn]
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: compute-buildspec.yaml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL

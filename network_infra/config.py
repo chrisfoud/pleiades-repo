@@ -24,7 +24,7 @@ class VpcConfig:
     PRIVATE_SUBNET_MASK: int
     ISOLATED_SUBNET_MASK: int
 
-VPC_1 = VpcConfig(
+VPC_EXCHANGE = VpcConfig(
     VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
     VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
     VPC_CIDR='10.0.0.0/16',
@@ -35,4 +35,15 @@ VPC_1 = VpcConfig(
     ISOLATED_SUBNET_MASK=24
 )
 
-VPC_LIST = [VPC_1]
+VPC_dev = VpcConfig(
+    VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
+    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    VPC_CIDR='10.10.0.0/16',
+    VPC_MAX_AZS=3,
+    NAT_GATEWAY=1,
+    PUBLIC_SUBNET_MASK=24,
+    PRIVATE_SUBNET_MASK=24,
+    ISOLATED_SUBNET_MASK=24
+)
+
+VPC_LIST = [VPC_EXCHANGE,VPC_dev]

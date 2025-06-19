@@ -1,4 +1,3 @@
-# vpc_alb_ec2_stack.py
 from aws_cdk import (
     Stack,
     Tags,
