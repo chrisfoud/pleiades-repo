@@ -19,14 +19,6 @@ class ALBConfig:
     ALB_SG_ID: str
     CERTIFICATE_ARN: str
     SG_DESC: str
-    
-    ALB_NAME: str
-    ALB_CFN_ID: str
-    VPC_NAME: str  # Add this field
-    ALB_SG_ID: str = None
-    CERTIFICATE_ARN: str = None
-    ALB_DESCR: str = None
-
 
 
 
@@ -36,7 +28,7 @@ ALB_EXCHANGE = ALBConfig(
     ALB_CFN_ID='alb_cfn_id',
     ALB_SG_ID='alb_sg_id',
     CERTIFICATE_ARN='certificate_arn',
-    DESCRIPTION='Description'
+    SG_DESC='Description'
 )
 
 VPC_LIST = [ALB_EXCHANGE]
