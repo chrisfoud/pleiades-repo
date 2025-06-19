@@ -16,6 +16,7 @@ APP_NAME = common_config.APP_NAME
 class ALBConfig:
     ALB_NAME: str
     ALB_CFN_ID: str
+    VPC_NAME: str
     ALB_SG_ID: str
     CERTIFICATE_ARN: str
     SG_DESC: str
@@ -26,6 +27,7 @@ class ALBConfig:
 ALB_EXCHANGE = ALBConfig(
     ALB_NAME=f'{ENV}-{COMMON_NAME}-alb',
     ALB_CFN_ID='alb_cfn_id',
+    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
     ALB_SG_ID='alb_sg_id',
     CERTIFICATE_ARN='certificate_arn',
     SG_DESC='Description'
