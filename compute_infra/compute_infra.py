@@ -200,7 +200,7 @@ class ComputeStack(Stack):
         )
         ec2_security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(22),
+            ec2.Port.tcp(3389),
             "Allow SSH traffic"
         )
 
@@ -214,7 +214,7 @@ class ComputeStack(Stack):
             ec2_name,
             vpc=vpc,
             instance_type=ec2.InstanceType(instance_type),
-            machine_image=ec2.MachineImage.generic_linux({'us-east-1': ami_id}),
+            machine_image=ec2.MachineImage.generic_windows({'us-east-1': ami_id}),
             security_group=ec2_security_group,
             vpc_subnets=ec2.SubnetSelection(subnets=private_subnets)
         )
