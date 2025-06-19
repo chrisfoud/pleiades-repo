@@ -35,7 +35,7 @@ VPC_EXCHANGE = VpcConfig(
     ISOLATED_SUBNET_MASK=24
 )
 
-VPC_dev = VpcConfig(
+VPC_DEV = VpcConfig(
     VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
     VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
     VPC_CIDR='10.10.0.0/16',
@@ -46,4 +46,4 @@ VPC_dev = VpcConfig(
     ISOLATED_SUBNET_MASK=24
 )
 
-VPC_LIST = [VPC_EXCHANGE,VPC_dev]
+VPC_LIST = [VPC_EXCHANGE,VPC_DEV]
