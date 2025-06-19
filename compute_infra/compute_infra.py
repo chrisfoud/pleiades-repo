@@ -101,7 +101,7 @@ class ComputeStack(Stack):
         public_subnets = []
         if public_subnet_ids:
             for i, subnet_id in enumerate(public_subnet_ids):
-                public_subnets.append(ec2.Subnet.from_subnet_id(self, f"{config.ALBConfig.ALB_NAME}-PublicSubnet{i+1}", subnet_id))
+                public_subnets.append(ec2.Subnet.from_subnet_id(self, f"{alb_name}-PublicSubnet{i+1}", subnet_id))
 
         alb = elbv2.ApplicationLoadBalancer(
             self,
