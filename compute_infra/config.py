@@ -33,13 +33,13 @@ ALB_EXCHANGE = ALBConfig(
     SG_DESC='Description'
 )
 
-ALB_DEV = ALBConfig(
-    ALB_NAME=f'dev-{COMMON_NAME}-alb',
-    ALB_CFN_ID='alb_cfn_id',
-    VPC_NAME=f'dev-{COMMON_NAME}-vpc',
-    ALB_SG_ID= None,
-    CERTIFICATE_ARN= None,
-    SG_DESC='Description'
-)
+# ALB_DEV = ALBConfig(
+#     ALB_NAME=f'dev-{COMMON_NAME}-alb',
+#     ALB_CFN_ID='alb_cfn_id',
+#     VPC_NAME=f'dev-{COMMON_NAME}-vpc',
+#     ALB_SG_ID= None,
+#     CERTIFICATE_ARN= None,
+#     SG_DESC='Description'
+# )
 
-ALB_LIST = [ALB_EXCHANGE,ALB_DEV]
+ALB_LIST = [ALB_EXCHANGE]
