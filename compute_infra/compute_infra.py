@@ -28,7 +28,7 @@ class ComputeStack(Stack):
             
             # Get public subnets for this VPC
             public_subnet_ids = []
-            for j in range(1, 4):  # Assuming 3 AZs
+            for j in range(1, 4):
                 subnet_id = ssm.StringParameter.value_from_lookup(
                     self, 
                     f"/{vpc_config.VPC_NAME}/public-subnet-{j}/id"
@@ -37,12 +37,12 @@ class ComputeStack(Stack):
 
             # Get private subnets for this VPC
             private_subnet_ids = []
-            for j in range(1, 4):  # Assuming 3 AZs
+            for j in range(1, 4):
                 subnet_id = ssm.StringParameter.value_from_lookup(
                     self, 
                     f"/{vpc_config.VPC_NAME}/private-subnet-{j}/id"
                 )
-                public_subnet_ids.append(subnet_id)
+                private_subnet_ids.append(subnet_id)
 
             vpcs[vpc_config.VPC_NAME] = {
                 'vpc': vpc,
@@ -52,6 +52,7 @@ class ComputeStack(Stack):
 
 
         for compute_config in config.ALB_LIST:
+            vpc_data = vpcs[compute_config.VPC_NAME]
             alb = self.create_alb(
                 compute_config.ALB_NAME,
                 vpc_data['vpc'],
