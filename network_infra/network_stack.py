@@ -35,7 +35,7 @@ class NetworkStack(Stack):
                 self, f"{vpc_config.VPV_ID}-id-output",
                 value=vpc.vpc_id,
                 description=f"VPC ID for {vpc_config.VPC_NAME}",
-                export_name=f"{config.ENV}-{config.COMMON_NAME}-vpc-id"
+                export_name=f"{vpc_config.VPC_NAME}-id"
             )
         
 
