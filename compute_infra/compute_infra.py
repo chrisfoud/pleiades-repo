@@ -159,7 +159,7 @@ class ComputeStack(Stack):
             protocol=elbv2.ApplicationProtocol.HTTP,
             target_type=elbv2.TargetType.INSTANCE,
             health_check=elbv2.HealthCheck(
-                path="/",
+                path="/health.txt",
                 protocol=elbv2.Protocol.HTTP,
                 port="80",
                 interval=Duration.seconds(30),
@@ -212,9 +212,9 @@ class ComputeStack(Stack):
 ###############################################################################################################
 
     def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
-        ssm_role = iam.Role(
+        ec2_role = iam.Role(
             self,
-            f"{ec2_name}-ssm-role",
+            f"{ec2_name}-role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
@@ -224,7 +224,7 @@ class ComputeStack(Stack):
         instance_profile = iam.CfnInstanceProfile(
             self,
             f"{ec2_name}-instance-profile",
-            roles=[ssm_role.role_name]
+            roles=[ec2_role.role_name]
         )
         ec2_security_group = ec2.SecurityGroup(
             self,
@@ -266,7 +266,9 @@ class ComputeStack(Stack):
 
         user_data = ec2.UserData.for_windows()
         user_data.add_commands(
-            "powershell -Command \"Install-WindowsFeature -name Web-Server -IncludeManagementTools\""
+            "mkdir C:\\web",
+            "echo OK > C:\\web\\health.txt",
+            "cd C:\\web && python -m http.server 80"
         )
 
         instance = ec2.Instance(
@@ -279,7 +281,7 @@ class ComputeStack(Stack):
                 vpc_subnets=ec2.SubnetSelection(subnets=private_subnets),
                 key_name=key_name,
                 user_data=user_data,
-                role=ssm_role
+                role=ec2_role
             )
 
         if ec2_alb is not None:

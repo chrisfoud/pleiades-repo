@@ -65,7 +65,19 @@ EC2_EXCHANGE_1 = EC2Config(
     EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
 )
 
+DC_SERVER = EC2Config(
+    EC2_NAME=f'DC-server-ec2',
+    EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',
+    EC2_INSTANCE_TYPE='t3.micro',
+    EC2_SG_ID= None,
+    AMI_REGION='eu-central-1',
+    AMI_ID='ami-016c25765a1fa5a76',
+    INSTANCE_IDS= [],
+    EC2_ALB=None,  # Specify ALB name or None
+    EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
+)
+
 
 ALB_LIST = [ALB_EXCHANGE]
 
-EC2_LIST = [EC2_EXCHANGE_1]
+EC2_LIST = [EC2_EXCHANGE_1,DC_SERVER]
