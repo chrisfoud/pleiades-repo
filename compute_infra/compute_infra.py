@@ -77,12 +77,12 @@ class ComputeStack(Stack):
                 compute_config.EC2_VPC,
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
-                compute_config.AMI_ID,
                 compute_config.EC2_SUBNET,
+                compute_config.AMI_ID,
                 compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
                 alb_target_groups,
-                alb_security_groups,
+                alb_security_groups
             )
 
 
