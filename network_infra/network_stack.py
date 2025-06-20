@@ -122,8 +122,9 @@ class NetworkStack(Stack):
             ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-pub-rt-assoc-{i}", route_table_id=public_rt.ref, subnet_id=subnet.subnet_id)
         
         private_rt = ec2.CfnRouteTable(self, f"{identifier}-private-rt", vpc_id=self.vpc.vpc_id)
-        if self.vpc.nat_gateways:
-            ec2.CfnRoute(self, f"{identifier}-private-route", route_table_id=private_rt.ref, destination_cidr_block="0.0.0.0/0", nat_gateway_id=self.vpc.nat_gateways[0].gateway_id)
+        if nat_gw > 0:
+            nat_gateway = ec2.CfnNatGateway(self, f"{identifier}-nat-gw", subnet_id=self.vpc.public_subnets[0].subnet_id, allocation_id=ec2.CfnEIP(self, f"{identifier}-eip").attr_allocation_id)
+            ec2.CfnRoute(self, f"{identifier}-private-route", route_table_id=private_rt.ref, destination_cidr_block="0.0.0.0/0", nat_gateway_id=nat_gateway.ref)
         for i, subnet in enumerate(self.vpc.private_subnets):
             ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-priv-rt-assoc-{i}", route_table_id=private_rt.ref, subnet_id=subnet.subnet_id)
         
