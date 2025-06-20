@@ -77,8 +77,8 @@ class ComputeStack(Stack):
                 compute_config.EC2_VPC,
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
-                compute_config.EC2_SUBNET,
                 compute_config.AMI_ID,
+                compute_config.EC2_SUBNET,
                 compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
                 alb_target_groups,
@@ -212,7 +212,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups, specific_subnet=None):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, specific_subnet, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
         ec2_role = iam.Role(
             self,
             f"{ec2_name}-role",
