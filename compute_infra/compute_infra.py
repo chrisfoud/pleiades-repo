@@ -212,6 +212,20 @@ class ComputeStack(Stack):
 ###############################################################################################################
 
     def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
+        ssm_role = iam.Role(
+            self,
+            f"{ec2_name}-ssm-role",
+            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
+            ]
+        )
+        
+        instance_profile = iam.InstanceProfile(
+            self,
+            f"{ec2_name}-instance-profile",
+            role=ssm_role
+        )
         ec2_security_group = ec2.SecurityGroup(
             self,
             f"{ec2_name}-sg",
@@ -237,7 +251,6 @@ class ComputeStack(Stack):
         private_subnets = []
         if private_subnet_ids:
             for i, subnet_id in enumerate(private_subnet_ids):
-                # Get AZ from SSM parameter
                 az = ssm.StringParameter.value_from_lookup(
                     self, 
                     f"/{vpc_name}/private-subnet-{i+1}/az"
@@ -265,7 +278,8 @@ class ComputeStack(Stack):
                 security_group=ec2_security_group,
                 vpc_subnets=ec2.SubnetSelection(subnets=private_subnets),
                 key_name=key_name,
-                user_data=user_data
+                user_data=user_data,
+                role=ssm_role
             )
 
         if ec2_alb is not None:
