@@ -29,6 +29,7 @@ class EC2Config:
     EC2_SG_ID: str
     INSTANCE_IDS: List[str]
     AMI_REGION: str
+    EC2_SUBNET: str = None  # Specific subnet number (1-3) or None for random
     AMI_ID: str
     EC2_ALB: str
     EC2_KEYPAIR: str
@@ -59,18 +60,46 @@ EC2_EXCHANGE_1 = EC2Config(
     EC2_INSTANCE_TYPE='t3.micro',
     EC2_SG_ID= None,
     AMI_REGION='eu-central-1',
+    EC2_SUBNET='1',  # Specific subnet (1-3) or None for random
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb',  # Specify ALB name or None
     EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
 )
 
-DC_SERVER = EC2Config(
+EC2_EXCHANGE_2 = EC2Config(
+    EC2_NAME=f'{ENV}-{COMMON_NAME}-ec2-2',
+    EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',
+    EC2_INSTANCE_TYPE='t3.micro',
+    EC2_SG_ID= None,
+    AMI_REGION='eu-central-1',
+    EC2_SUBNET='2',  # Specific subnet (1-3) or None for random
+    AMI_ID='ami-016c25765a1fa5a76',
+    INSTANCE_IDS= [],
+    EC2_ALB=f'{ENV}-{COMMON_NAME}-alb',  # Specify ALB name or None
+    EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
+)
+
+DC_SERVER_1 = EC2Config(
     EC2_NAME=f'DC-server-ec2',
     EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',
     EC2_INSTANCE_TYPE='t3.micro',
     EC2_SG_ID= None,
     AMI_REGION='eu-central-1',
+    EC2_SUBNET=None,  # Specific subnet (1-3) or None for random
+    AMI_ID='ami-016c25765a1fa5a76',
+    INSTANCE_IDS= [],
+    EC2_ALB=None,  # Specify ALB name or None
+    EC2_KEYPAIR='test-keypair'  # Specify keypair name or None
+)
+
+DC_SERVER_2 = EC2Config(
+    EC2_NAME=f'DC-server-ec2-2',
+    EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',
+    EC2_INSTANCE_TYPE='t3.micro',
+    EC2_SG_ID= None,
+    AMI_REGION='eu-central-1',
+    EC2_SUBNET=None,  # Specific subnet (1-3) or None for random
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=None,  # Specify ALB name or None
@@ -80,4 +109,4 @@ DC_SERVER = EC2Config(
 
 ALB_LIST = [ALB_EXCHANGE]
 
-EC2_LIST = [EC2_EXCHANGE_1,DC_SERVER]
+EC2_LIST = [EC2_EXCHANGE_1,EC2_EXCHANGE_2,DC_SERVER_1,DC_SERVER_2]

@@ -77,11 +77,12 @@ class ComputeStack(Stack):
                 compute_config.EC2_VPC,
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
+                compute_config.EC2_SUBNET,
                 compute_config.AMI_ID,
                 compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
                 alb_target_groups,
-                alb_security_groups
+                alb_security_groups,
             )
 
 
@@ -211,7 +212,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups, specific_subnet=None):
         ec2_role = iam.Role(
             self,
             f"{ec2_name}-role",
@@ -249,7 +250,24 @@ class ComputeStack(Stack):
             )
 
         private_subnets = []
-        if private_subnet_ids:
+        if specific_subnet and private_subnet_ids:
+            # Use specific subnet
+            subnet_index = int(specific_subnet) - 1
+            subnet_id = private_subnet_ids[subnet_index]
+            az = ssm.StringParameter.value_from_lookup(
+                self, 
+                f"/{vpc_name}/private-subnet-{specific_subnet}/az"
+            )
+            private_subnets.append(
+                ec2.Subnet.from_subnet_attributes(
+                    self, 
+                    f"{ec2_name}-PrivateSubnet{specific_subnet}",
+                    subnet_id=subnet_id,
+                    availability_zone=az
+                )
+            )
+        elif private_subnet_ids:
+            # Use all subnets (random placement)
             for i, subnet_id in enumerate(private_subnet_ids):
                 az = ssm.StringParameter.value_from_lookup(
                     self, 
