@@ -116,40 +116,40 @@ class NetworkStack(Stack):
             )
         
         # Create Route Tables
-        public_rt = ec2.RouteTable(self, f"{identifier}-public-rt", vpc=self.vpc)
-        ec2.Route(self, f"{identifier}-public-route", route_table=public_rt, destination_cidr_block="0.0.0.0/0", gateway=self.vpc.internet_gateway)
+        public_rt = ec2.CfnRouteTable(self, f"{identifier}-public-rt", vpc_id=self.vpc.vpc_id)
+        ec2.CfnRoute(self, f"{identifier}-public-route", route_table_id=public_rt.ref, destination_cidr_block="0.0.0.0/0", gateway_id=self.vpc.internet_gateway_id)
         for i, subnet in enumerate(self.vpc.public_subnets):
-            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-pub-rt-assoc-{i}", route_table_id=public_rt.route_table_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-pub-rt-assoc-{i}", route_table_id=public_rt.ref, subnet_id=subnet.subnet_id)
         
-        private_rt = ec2.RouteTable(self, f"{identifier}-private-rt", vpc=self.vpc)
+        private_rt = ec2.CfnRouteTable(self, f"{identifier}-private-rt", vpc_id=self.vpc.vpc_id)
         if self.vpc.nat_gateways:
-            ec2.Route(self, f"{identifier}-private-route", route_table=private_rt, destination_cidr_block="0.0.0.0/0", nat_gateway_id=self.vpc.nat_gateways[0].gateway_id)
+            ec2.CfnRoute(self, f"{identifier}-private-route", route_table_id=private_rt.ref, destination_cidr_block="0.0.0.0/0", nat_gateway_id=self.vpc.nat_gateways[0].gateway_id)
         for i, subnet in enumerate(self.vpc.private_subnets):
-            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-priv-rt-assoc-{i}", route_table_id=private_rt.route_table_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-priv-rt-assoc-{i}", route_table_id=private_rt.ref, subnet_id=subnet.subnet_id)
         
-        isolated_rt = ec2.RouteTable(self, f"{identifier}-isolated-rt", vpc=self.vpc)
+        isolated_rt = ec2.CfnRouteTable(self, f"{identifier}-isolated-rt", vpc_id=self.vpc.vpc_id)
         for i, subnet in enumerate(self.vpc.isolated_subnets):
-            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-iso-rt-assoc-{i}", route_table_id=isolated_rt.route_table_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetRouteTableAssociation(self, f"{identifier}-iso-rt-assoc-{i}", route_table_id=isolated_rt.ref, subnet_id=subnet.subnet_id)
         
         # Create NACLs
-        public_nacl = ec2.NetworkAcl(self, f"{identifier}-public-nacl", vpc=self.vpc)
-        ec2.NetworkAclEntry(self, f"{identifier}-pub-nacl-http", network_acl=public_nacl, rule_number=100, protocol=ec2.AclTrafficType.TCP, rule_action=ec2.AclRuleAction.ALLOW, port_range=ec2.AclPortRange(from_=80, to=80), cidr=ec2.AclCidr.any_ipv4(), traffic=ec2.AclTraffic.inbound())
-        ec2.NetworkAclEntry(self, f"{identifier}-pub-nacl-https", network_acl=public_nacl, rule_number=110, protocol=ec2.AclTrafficType.TCP, rule_action=ec2.AclRuleAction.ALLOW, port_range=ec2.AclPortRange(from_=443, to=443), cidr=ec2.AclCidr.any_ipv4(), traffic=ec2.AclTraffic.inbound())
-        ec2.NetworkAclEntry(self, f"{identifier}-pub-nacl-out", network_acl=public_nacl, rule_number=100, protocol=ec2.AclTrafficType.ALL_TRAFFIC, rule_action=ec2.AclRuleAction.ALLOW, cidr=ec2.AclCidr.any_ipv4(), traffic=ec2.AclTraffic.outbound())
+        public_nacl = ec2.CfnNetworkAcl(self, f"{identifier}-public-nacl", vpc_id=self.vpc.vpc_id)
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-pub-nacl-http", network_acl_id=public_nacl.ref, rule_number=100, protocol=6, rule_action="allow", port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(from_=80, to=80), cidr_block="0.0.0.0/0")
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-pub-nacl-https", network_acl_id=public_nacl.ref, rule_number=110, protocol=6, rule_action="allow", port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(from_=443, to=443), cidr_block="0.0.0.0/0")
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-pub-nacl-out", network_acl_id=public_nacl.ref, rule_number=100, protocol=-1, rule_action="allow", cidr_block="0.0.0.0/0", egress=True)
         for i, subnet in enumerate(self.vpc.public_subnets):
-            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-pub-nacl-assoc-{i}", network_acl_id=public_nacl.network_acl_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-pub-nacl-assoc-{i}", network_acl_id=public_nacl.ref, subnet_id=subnet.subnet_id)
         
-        private_nacl = ec2.NetworkAcl(self, f"{identifier}-private-nacl", vpc=self.vpc)
-        ec2.NetworkAclEntry(self, f"{identifier}-priv-nacl-in", network_acl=private_nacl, rule_number=100, protocol=ec2.AclTrafficType.ALL_TRAFFIC, rule_action=ec2.AclRuleAction.ALLOW, cidr=ec2.AclCidr.ipv4(vpc_cidr), traffic=ec2.AclTraffic.inbound())
-        ec2.NetworkAclEntry(self, f"{identifier}-priv-nacl-out", network_acl=private_nacl, rule_number=100, protocol=ec2.AclTrafficType.ALL_TRAFFIC, rule_action=ec2.AclRuleAction.ALLOW, cidr=ec2.AclCidr.any_ipv4(), traffic=ec2.AclTraffic.outbound())
+        private_nacl = ec2.CfnNetworkAcl(self, f"{identifier}-private-nacl", vpc_id=self.vpc.vpc_id)
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-priv-nacl-in", network_acl_id=private_nacl.ref, rule_number=100, protocol=-1, rule_action="allow", cidr_block=vpc_cidr)
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-priv-nacl-out", network_acl_id=private_nacl.ref, rule_number=100, protocol=-1, rule_action="allow", cidr_block="0.0.0.0/0", egress=True)
         for i, subnet in enumerate(self.vpc.private_subnets):
-            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-priv-nacl-assoc-{i}", network_acl_id=private_nacl.network_acl_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-priv-nacl-assoc-{i}", network_acl_id=private_nacl.ref, subnet_id=subnet.subnet_id)
         
-        isolated_nacl = ec2.NetworkAcl(self, f"{identifier}-isolated-nacl", vpc=self.vpc)
-        ec2.NetworkAclEntry(self, f"{identifier}-iso-nacl-in", network_acl=isolated_nacl, rule_number=100, protocol=ec2.AclTrafficType.ALL_TRAFFIC, rule_action=ec2.AclRuleAction.ALLOW, cidr=ec2.AclCidr.ipv4(vpc_cidr), traffic=ec2.AclTraffic.inbound())
-        ec2.NetworkAclEntry(self, f"{identifier}-iso-nacl-out", network_acl=isolated_nacl, rule_number=100, protocol=ec2.AclTrafficType.ALL_TRAFFIC, rule_action=ec2.AclRuleAction.ALLOW, cidr=ec2.AclCidr.ipv4(vpc_cidr), traffic=ec2.AclTraffic.outbound())
+        isolated_nacl = ec2.CfnNetworkAcl(self, f"{identifier}-isolated-nacl", vpc_id=self.vpc.vpc_id)
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-iso-nacl-in", network_acl_id=isolated_nacl.ref, rule_number=100, protocol=-1, rule_action="allow", cidr_block=vpc_cidr)
+        ec2.CfnNetworkAclEntry(self, f"{identifier}-iso-nacl-out", network_acl_id=isolated_nacl.ref, rule_number=100, protocol=-1, rule_action="allow", cidr_block=vpc_cidr, egress=True)
         for i, subnet in enumerate(self.vpc.isolated_subnets):
-            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-iso-nacl-assoc-{i}", network_acl_id=isolated_nacl.network_acl_id, subnet_id=subnet.subnet_id)
+            ec2.CfnSubnetNetworkAclAssociation(self, f"{identifier}-iso-nacl-assoc-{i}", network_acl_id=isolated_nacl.ref, subnet_id=subnet.subnet_id)
             
         # Return the VPC
         return self.vpc
