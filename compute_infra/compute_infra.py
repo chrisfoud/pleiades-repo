@@ -160,7 +160,7 @@ class ComputeStack(Stack):
             protocol=elbv2.ApplicationProtocol.HTTP,
             target_type=elbv2.TargetType.INSTANCE,
             health_check=elbv2.HealthCheck(
-                path="/health.txt",
+                path="/",
                 protocol=elbv2.Protocol.HTTP,
                 port="80",
                 interval=Duration.seconds(30),
@@ -284,9 +284,7 @@ class ComputeStack(Stack):
 
         user_data = ec2.UserData.for_windows()
         user_data.add_commands(
-            "mkdir C:\\web",
-            "echo OK > C:\\web\\health.txt",
-            "cd C:\\web && python -m http.server 80"
+            "powershell -Command \"Install-WindowsFeature -name Web-Server -IncludeManagementTools\""
         )
 
         instance = ec2.Instance(
