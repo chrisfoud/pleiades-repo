@@ -221,10 +221,10 @@ class ComputeStack(Stack):
             ]
         )
         
-        instance_profile = iam.InstanceProfile(
+        instance_profile = iam.CfnInstanceProfile(
             self,
             f"{ec2_name}-instance-profile",
-            role=ssm_role
+            roles=[ssm_role.role_name]
         )
         ec2_security_group = ec2.SecurityGroup(
             self,
