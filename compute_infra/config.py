@@ -29,7 +29,7 @@ class EC2Config:
     EC2_SG_ID: str
     INSTANCE_IDS: List[str]
     AMI_REGION: str
-    EC2_SUBNET: str = None  # Specific subnet number (1-3) or None for random
+    EC2_SUBNET: str  # Specific subnet number (1-3) or None for random
     AMI_ID: str
     EC2_ALB: str
     EC2_KEYPAIR: str
