@@ -23,6 +23,7 @@ class VpcConfig:
     PUBLIC_SUBNET_MASK: int
     PRIVATE_SUBNET_MASK: int
     ISOLATED_SUBNET_MASK: int
+    custom_subnets: List[dict] = field(default_factory=list)
 
 VPC_EXCHANGE = VpcConfig(
     VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
@@ -32,8 +33,73 @@ VPC_EXCHANGE = VpcConfig(
     NAT_GATEWAY=1,
     PUBLIC_SUBNET_MASK=24,
     PRIVATE_SUBNET_MASK=24,
-    ISOLATED_SUBNET_MASK=24
+    ISOLATED_SUBNET_MASK=24,
+    custom_subnets=[
+        {
+            'name': 'web-subnet-1',
+            'cidr': '10.0.1.0/24',
+            'az': 'eu-central-1a',
+            'type': 'public'
+        },
+        {
+            'name': 'app-subnet-1', 
+            'cidr': '10.0.2.0/24',
+            'az': 'eu-central-1a',
+            'type': 'private'
+        },
+        {
+            'name': 'db-subnet-1',
+            'cidr': '10.0.3.0/24', 
+            'az': 'eu-central-1a',
+            'type': 'isolated'
+        },
+        {
+            'name': 'web-subnet-1',
+            'cidr': '10.0.4.0/24',
+            'az': 'eu-central-1b',
+            'type': 'public'
+        },
+        {
+            'name': 'app-subnet-1', 
+            'cidr': '10.0.5.0/24',
+            'az': 'eu-central-1b',
+            'type': 'private'
+        },
+        {
+            'name': 'db-subnet-1',
+            'cidr': '10.0.6.0/24', 
+            'az': 'eu-central-1b',
+            'type': 'isolated'
+        },
+        {
+            'name': 'web-subnet-1',
+            'cidr': '10.0.7.0/24',
+            'az': 'eu-central-1c',
+            'type': 'public'
+        },
+        {
+            'name': 'app-subnet-1', 
+            'cidr': '10.0.8.0/24',
+            'az': 'eu-central-1c',
+            'type': 'private'
+        },
+        {
+            'name': 'db-subnet-1',
+            'cidr': '10.0.9.0/24', 
+            'az': 'eu-central-1c',
+            'type': 'isolated'
+        },
+        {
+            'name': 'db-subnet-1',
+            'cidr': '10.0.10.0/24', 
+            'az': 'eu-central-1c',
+            'type': 'isolated'
+        }
+    ]
 )
+
+
+
 
 # VPC_DEV = VpcConfig(
 #     VPV_ID=f'dev-{COMMON_NAME}-vpc',
@@ -43,7 +109,61 @@ VPC_EXCHANGE = VpcConfig(
 #     NAT_GATEWAY=1,
 #     PUBLIC_SUBNET_MASK=24,
 #     PRIVATE_SUBNET_MASK=24,
-#     ISOLATED_SUBNET_MASK=24
+#     ISOLATED_SUBNET_MASK=24,
+#     custom_subnets=[
+#     {
+#         'name': 'web-subnet-1',
+#         'cidr': '10.0.1.0/24',
+#         'az': 'eu-central-1a',
+#         'type': 'public'
+#     },
+#     {
+#         'name': 'app-subnet-1', 
+#         'cidr': '10.0.2.0/24',
+#         'az': 'eu-central-1a',
+#         'type': 'private'
+#     },
+#     {
+#         'name': 'db-subnet-1',
+#         'cidr': '10.0.3.0/24', 
+#         'az': 'eu-central-1a',
+#         'type': 'isolated'
+#     }
+#     {
+#         'name': 'web-subnet-1',
+#         'cidr': '10.0.4.0/24',
+#         'az': 'eu-central-1b',
+#         'type': 'public'
+#     },
+#     {
+#         'name': 'app-subnet-1', 
+#         'cidr': '10.0.5.0/24',
+#         'az': 'eu-central-1b',
+#         'type': 'private'
+#     },
+#     {
+#         'name': 'db-subnet-1',
+#         'cidr': '10.0.6.0/24', 
+#         'az': 'eu-central-1b',
+#         'type': 'isolated'
+#     }{
+#         'name': 'web-subnet-1',
+#         'cidr': '10.0.7.0/24',
+#         'az': 'eu-central-1c',
+#         'type': 'public'
+#     },
+#     {
+#         'name': 'app-subnet-1', 
+#         'cidr': '10.0.8.0/24',
+#         'az': 'eu-central-1c',
+#         'type': 'private'
+#     },
+#     {
+#         'name': 'db-subnet-1',
+#         'cidr': '10.0.9.0/24', 
+#         'az': 'eu-central-1c',
+#         'type': 'isolated'
+#     }
 # )
 
 VPC_LIST = [VPC_EXCHANGE]

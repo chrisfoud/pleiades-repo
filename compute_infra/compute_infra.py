@@ -1,7 +1,6 @@
 from aws_cdk import (
     Stack,
     Tags,
-    CfnOutput,
     Duration,
     aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as elbv2,
