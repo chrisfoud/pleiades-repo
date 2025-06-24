@@ -25,9 +25,11 @@ class VpcConfig:
     ISOLATED_SUBNET_MASK: int
     custom_subnets: List[dict] = field(default_factory=list)
 
+vpc_name = f'{ENV}-{COMMON_NAME}-vpc'
+
 VPC_EXCHANGE = VpcConfig(
-    VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
-    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
+    VPV_ID=vpc_name,
+    VPC_NAME=vpc_name,
     VPC_CIDR='10.0.0.0/16',
     VPC_MAX_AZS=3,
     NAT_GATEWAY=1,
@@ -36,61 +38,61 @@ VPC_EXCHANGE = VpcConfig(
     ISOLATED_SUBNET_MASK=24,
     custom_subnets=[
         {
-            'name': f'{VpcConfig.VPC_NAME}-public-subnet-1',
+            'name': f'{vpc_name}-public-subnet-1',
             'cidr': '10.0.101.0/24',
             'az': 'eu-central-1a',
             'type': 'public'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-private-subnet-1', 
+            'name': f'{vpc_name}-private-subnet-1', 
             'cidr': '10.0.102.0/24',
             'az': 'eu-central-1a',
             'type': 'private'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-isolated-subnet-1',
+            'name': f'{vpc_name}-isolated-subnet-1',
             'cidr': '10.0.103.0/24', 
             'az': 'eu-central-1a',
             'type': 'isolated'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-public-subnet-2',
+            'name': f'{vpc_name}-public-subnet-2',
             'cidr': '10.0.104.0/24',
             'az': 'eu-central-1b',
             'type': 'public'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-private-subnet-2', 
+            'name': f'{vpc_name}-private-subnet-2', 
             'cidr': '10.0.105.0/24',
             'az': 'eu-central-1b',
             'type': 'private'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-isolated-subnet-2',
+            'name': f'{vpc_name}-isolated-subnet-2',
             'cidr': '10.0.106.0/24', 
             'az': 'eu-central-1b',
             'type': 'isolated'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-public-subnet-3',
+            'name': f'{vpc_name}-public-subnet-3',
             'cidr': '10.0.107.0/24',
             'az': 'eu-central-1c',
             'type': 'public'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-private-subnet-3', 
+            'name': f'{vpc_name}-private-subnet-3', 
             'cidr': '10.0.108.0/24',
             'az': 'eu-central-1c',
             'type': 'private'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-isolated-subnet-3',
+            'name': f'{vpc_name}-isolated-subnet-3',
             'cidr': '10.0.109.0/24', 
             'az': 'eu-central-1c',
             'type': 'isolated'
         },
         {
-            'name': f'{VpcConfig.VPC_NAME}-public-subnet-1-2',
+            'name': f'{vpc_name}-public-subnet-1-2',
             'cidr': '10.0.110.0/24', 
             'az': 'eu-central-1c',
             'type': 'isolated'
