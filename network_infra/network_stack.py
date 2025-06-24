@@ -82,20 +82,18 @@ class NetworkStack(Stack):
                 # Route table association based on type
                 if subnet_config['type'] == 'public':
                     # Associate with public route table (has IGW route)
-                    for rt in self.vpc.public_subnets[0].route_table:
-                        ec2.CfnSubnetRouteTableAssociation(
-                            self, f"{identifier}-{subnet_config['name']}-rt-assoc",
-                            subnet_id=subnet.subnet_id,
-                            route_table_id=rt.route_table_id
-                        )
+                    ec2.CfnSubnetRouteTableAssociation(
+                        self, f"{identifier}-{subnet_config['name']}-rt-assoc",
+                        subnet_id=subnet.subnet_id,
+                        route_table_id=self.vpc.public_subnets[0].route_table.route_table_id
+                    )
                 elif subnet_config['type'] == 'private':
                     # Associate with private route table (has NAT route)
-                    for rt in self.vpc.private_subnets[0].route_table:
-                        ec2.CfnSubnetRouteTableAssociation(
-                            self, f"{identifier}-{subnet_config['name']}-rt-assoc",
-                            subnet_id=subnet.subnet_id,
-                            route_table_id=rt.route_table_id
-                        )
+                    ec2.CfnSubnetRouteTableAssociation(
+                        self, f"{identifier}-{subnet_config['name']}-rt-assoc",
+                        subnet_id=subnet.subnet_id,
+                        route_table_id=self.vpc.private_subnets[0].route_table.route_table_id
+                    )
                 elif subnet_config['type'] == 'isolated':
                     # Create isolated route table (no internet routes)
                     isolated_rt = ec2.RouteTable(
