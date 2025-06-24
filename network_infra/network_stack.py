@@ -74,7 +74,7 @@ class NetworkStack(Stack):
             for subnet_config in custom_subnets:
                 subnet = ec2.Subnet(
                     self, f"{identifier}-custom-{subnet_config['name']}",
-                    vpc=self.vpc,
+                    vpc_id=self.vpc.vpc_id,
                     cidr_block=subnet_config['cidr'],
                     availability_zone=subnet_config['az']
                 )
