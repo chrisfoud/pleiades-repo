@@ -82,7 +82,8 @@ class ComputeStack(Stack):
                 compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
                 alb_target_groups,
-                alb_security_groups
+                alb_security_groups,
+                compute_config.EC2_SG_ID
             )
 
 
@@ -212,7 +213,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, specific_subnet, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, specific_subnet, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups, sg_id=None):
         ec2_role = iam.Role(
             self,
             f"{ec2_name}-role",
@@ -227,27 +228,35 @@ class ComputeStack(Stack):
             f"{ec2_name}-instance-profile",
             roles=[ec2_role.role_name]
         )
-        ec2_security_group = ec2.SecurityGroup(
-            self,
-            f"{ec2_name}-sg",
-            vpc=vpc,
-            allow_all_outbound=True,
-            description=f"Security group for {ec2_name}"
-        )
         
-        ec2_security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(3389),
-            "Allow RDP traffic"
-        )
-        
-        if ec2_alb is not None:
-            alb_sg = alb_security_groups[ec2_alb]
-            ec2_security_group.add_ingress_rule(
-                 ec2.Peer.security_group_id(alb_sg.security_group_id),
-                ec2.Port.tcp(80),
-                "Allow HTTP traffic from ALB"
+        if sg_id:
+            ec2_security_group = ec2.SecurityGroup.from_security_group_id(
+                self, 
+                f"{ec2_name}-imported-sg", 
+                sg_id
             )
+        else:
+            ec2_security_group = ec2.SecurityGroup(
+                self,
+                f"{ec2_name}-sg",
+                vpc=vpc,
+                allow_all_outbound=True,
+                description=f"Security group for {ec2_name}"
+            )
+            
+            ec2_security_group.add_ingress_rule(
+                ec2.Peer.any_ipv4(),
+                ec2.Port.tcp(3389),
+                "Allow RDP traffic"
+            )
+            
+            if ec2_alb is not None:
+                alb_sg = alb_security_groups[ec2_alb]
+                ec2_security_group.add_ingress_rule(
+                     ec2.Peer.security_group_id(alb_sg.security_group_id),
+                    ec2.Port.tcp(80),
+                    "Allow HTTP traffic from ALB"
+                )
 
         private_subnets = []
         if specific_subnet and private_subnet_ids:
