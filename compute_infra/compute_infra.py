@@ -230,13 +230,20 @@ class ComputeStack(Stack):
         )
         
         if sg_id:
-            ec2_security_group = ec2.SecurityGroup.from_lookup(
-                self, 
-                f"{ec2_name}-imported-sg", 
-                security_group_id=sg_id if sg_id.startswith('sg-') else None,
-                security_group_name=sg_id if not sg_id.startswith('sg-') else None,
-                vpc=vpc
-            )
+            if sg_id.startswith('sg-'):
+                ec2_security_group = ec2.SecurityGroup.from_security_group_id(
+                    self, 
+                    f"{ec2_name}-imported-sg", 
+                    sg_id
+                )
+            else:
+                # Look up by name using VPC lookup
+                ec2_security_group = ec2.SecurityGroup.from_lookup_by_name(
+                    self,
+                    f"{ec2_name}-imported-sg",
+                    sg_id,
+                    vpc
+                )
         else:
             ec2_security_group = ec2.SecurityGroup(
                 self,
