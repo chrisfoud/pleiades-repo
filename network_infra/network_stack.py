@@ -27,8 +27,7 @@ class NetworkStack(Stack):
                 vpc_config.NAT_GATEWAY,
                 vpc_config.PUBLIC_SUBNET_MASK,
                 vpc_config.PRIVATE_SUBNET_MASK,
-                vpc_config.ISOLATED_SUBNET_MASK,
-                vpc_config.custom_subnets
+                vpc_config.ISOLATED_SUBNET_MASK
             )
             
             # Add CloudFormation outputs for VPC ID
@@ -41,7 +40,7 @@ class NetworkStack(Stack):
         
 
     
-    def create_vpc(self, identifier, vpc_name, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask, custom_subnets=None):
+    def create_vpc(self ,identifier ,vpc_name , vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
 
         self.vpc = ec2.Vpc(
             self, identifier,
@@ -69,45 +68,6 @@ class NetworkStack(Stack):
         )
         Tags.of(self.vpc).add("Name", vpc_name)
         
-        # Add custom subnets
-        if custom_subnets:
-            for subnet_config in custom_subnets:
-                subnet = ec2.Subnet(
-                    self, f"{identifier}-custom-{subnet_config['name']}",
-                    vpc_id=self.vpc.vpc_id,
-                    cidr_block=subnet_config['cidr'],
-                    availability_zone=subnet_config['az']
-                )
-                
-                # Route table association based on type
-                if subnet_config['type'] == 'public':
-                    # Associate with public route table (has IGW route)
-                    ec2.CfnSubnetRouteTableAssociation(
-                        self, f"{identifier}-{subnet_config['name']}-rt-assoc",
-                        subnet_id=subnet.subnet_id,
-                        route_table_id=self.vpc.public_subnets[0].route_table.route_table_id
-                    )
-                elif subnet_config['type'] == 'private':
-                    # Associate with private route table (has NAT route)
-                    ec2.CfnSubnetRouteTableAssociation(
-                        self, f"{identifier}-{subnet_config['name']}-rt-assoc",
-                        subnet_id=subnet.subnet_id,
-                        route_table_id=self.vpc.private_subnets[0].route_table.route_table_id
-                    )
-                elif subnet_config['type'] == 'isolated':
-                    # Create isolated route table (no internet routes)
-                    isolated_rt = ec2.RouteTable(
-                        self, f"{identifier}-{subnet_config['name']}-rt",
-                        vpc=self.vpc
-                    )
-                    ec2.CfnSubnetRouteTableAssociation(
-                        self, f"{identifier}-{subnet_config['name']}-rt-assoc",
-                        subnet_id=subnet.subnet_id,
-                        route_table_id=isolated_rt.route_table_id
-                    )
-
-
-
         # Create SSM parameters for VPC ID
         ssm.StringParameter(
             self, f"{identifier}-vpc-id-param",
@@ -153,8 +113,8 @@ class NetworkStack(Stack):
                 parameter_name=f"/{vpc_name}/isolated-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Isolated Subnet {i+1} ID for {vpc_name}"
-            )
-
+            )            
+            
         # Return the VPC
         return self.vpc
 
