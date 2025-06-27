@@ -40,9 +40,9 @@ VPC_EXCHANGE = VpcConfig(
     PRIVATE_SUBNET_MASK=24,
     ISOLATED_SUBNET_MASK=24,
         SUBNETS=[
-            SubnetSpec(["public-1", "public-2"], "public"),
-            SubnetSpec(["private-1", "private-2"], "private"), 
-            SubnetSpec(["db-isolated"], "isolated")
+            SubnetSpec(["public"], "public"),
+            SubnetSpec(["app-private", "ec2-private"], "private"), 
+            SubnetSpec(["isolated"], "isolated")
     ]
 )
 
