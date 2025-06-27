@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_ssm as ssm,
 )
+from typing import List
 from constructs import Construct
 from . import config
 
@@ -17,9 +18,9 @@ class NetworkStack(Stack):
         
         super().__init__(scope, construct_id, **kwargs)
 
-        
         for vpc_config in config.VPC_LIST:
             vpc = self.create_vpc(
+                vpc_config,
                 vpc_config.VPV_ID,
                 vpc_config.VPC_NAME,
                 vpc_config.VPC_CIDR,
@@ -37,10 +38,29 @@ class NetworkStack(Stack):
                 description=f"VPC ID for {vpc_config.VPC_NAME}",
                 export_name=f"{vpc_config.VPC_NAME}-id"
             )
+    
+    def create_subnet_configurations(self, names: List[str], subnet_type: str, cidr_mask: int) -> List[ec2.SubnetConfiguration]:
+        subnet_type_map = {
+            'public': ec2.SubnetType.PUBLIC,
+            'private': ec2.SubnetType.PRIVATE_WITH_EGRESS,
+            'isolated': ec2.SubnetType.PRIVATE_ISOLATED
+        }
         
+        return [ec2.SubnetConfiguration(
+            name=name,
+            subnet_type=subnet_type_map[subnet_type],
+            cidr_mask=cidr_mask
+        ) for name in names]
 
     
-    def create_vpc(self ,identifier ,vpc_name , vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
+    def create_vpc(self ,vpc_config ,identifier ,vpc_name , vpc_cidr, vpc_maz_azs, nat_gw,public_subnet_count, public_subnet_mask,private_subnet_count, private_subnet_mask,isolated_subnet_count, isolated_subnet_mask):
+
+        subnet_configs = []
+        for subnet_spec in vpc_config.SUBNETS:
+            mask = public_subnet_mask if subnet_spec.subnet_type == "public" else \
+                private_subnet_mask if subnet_spec.subnet_type == "private" else isolated_subnet_mask
+            subnet_configs.extend(self.create_subnet_configurations(
+                subnet_spec.names, subnet_spec.subnet_type, mask))
 
         self.vpc = ec2.Vpc(
             self, identifier,
@@ -48,23 +68,7 @@ class NetworkStack(Stack):
             ip_addresses=ec2.IpAddresses.cidr(vpc_cidr),
             max_azs= vpc_maz_azs,
             nat_gateways= nat_gw,
-            subnet_configuration=[
-                ec2.SubnetConfiguration(
-                    name="Public",
-                    subnet_type=ec2.SubnetType.PUBLIC,
-                    cidr_mask= public_subnet_mask
-                ),
-                ec2.SubnetConfiguration(
-                    name="Private",
-                    subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, # Instances need egress to download packages
-                    cidr_mask= private_subnet_mask
-                ),
-                ec2.SubnetConfiguration(
-                    name="Isolated",
-                    subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
-                    cidr_mask= isolated_subnet_mask
-                )
-            ]
+            subnet_configuration=subnet_configs
         )
         Tags.of(self.vpc).add("Name", vpc_name)
         

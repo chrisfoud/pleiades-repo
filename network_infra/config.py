@@ -13,6 +13,11 @@ COMMON_NAME = common_config.COMMON_NAME
 APP_NAME = common_config.APP_NAME
 
 @dataclass
+class SubnetSpec:
+    names: List[str]
+    subnet_type: str
+
+@dataclass
 class VpcConfig:
 
     VPV_ID: str
@@ -23,6 +28,7 @@ class VpcConfig:
     PUBLIC_SUBNET_MASK: int
     PRIVATE_SUBNET_MASK: int
     ISOLATED_SUBNET_MASK: int
+    SUBNETS: List[SubnetSpec] = field(default_factory=list)
 
 VPC_EXCHANGE = VpcConfig(
     VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
@@ -32,7 +38,12 @@ VPC_EXCHANGE = VpcConfig(
     NAT_GATEWAY=1,
     PUBLIC_SUBNET_MASK=24,
     PRIVATE_SUBNET_MASK=24,
-    ISOLATED_SUBNET_MASK=24
+    ISOLATED_SUBNET_MASK=24,
+        SUBNETS=[
+            SubnetSpec(["public-1", "public-2"], "public"),
+            SubnetSpec(["private-1", "private-2"], "private"), 
+            SubnetSpec(["db-isolated"], "isolated")
+    ]
 )
 
 # VPC_DEV = VpcConfig(

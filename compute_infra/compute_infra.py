@@ -237,7 +237,6 @@ class ComputeStack(Stack):
                     sg_id
                 )
             else:
-                # Look up by name using VPC lookup
                 ec2_security_group = ec2.SecurityGroup.from_lookup_by_name(
                     self,
                     f"{ec2_name}-imported-sg",
