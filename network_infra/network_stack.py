@@ -53,7 +53,7 @@ class NetworkStack(Stack):
         ) for name in names]
 
     
-    def create_vpc(self ,vpc_config ,identifier ,vpc_name , vpc_cidr, vpc_maz_azs, nat_gw,public_subnet_count, public_subnet_mask,private_subnet_count, private_subnet_mask,isolated_subnet_count, isolated_subnet_mask):
+    def create_vpc(self, vpc_config, identifier, vpc_name, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
 
         subnet_configs = []
         for subnet_spec in vpc_config.SUBNETS:
