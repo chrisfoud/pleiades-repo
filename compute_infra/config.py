@@ -63,7 +63,7 @@ ALB_EXCHANGE = ALBConfig(
 # )
 
 
-# EC2_EXCHANGE_1 = EC2Config(
+# EC2_ID = EC2Config(
 #     EC2_NAME=f'{ENV}-{COMMON_NAME}-ec2',        # Dynamic instance name
 #     EC2_VPC=f'{ENV}-{COMMON_NAME}-vpc',         # Target VPC the instance will be deployed
 #     EC2_INSTANCE_TYPE='t3.micro',               # Define Instance type
