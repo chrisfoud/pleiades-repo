@@ -39,7 +39,7 @@ class NetworkStack(Stack):
                 export_name=f"{vpc_config.VPC_NAME}-id"
             )
     
-    def create_subnet_configurations(self, names: List[str], subnet_type: str, cidr_mask: int) -> List[ec2.SubnetConfiguration]:
+    def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
         subnet_type_map = {
             'public': ec2.SubnetType.PUBLIC,
             'private': ec2.SubnetType.PRIVATE_WITH_EGRESS,
