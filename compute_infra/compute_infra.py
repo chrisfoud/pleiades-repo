@@ -266,13 +266,16 @@ class ComputeStack(Stack):
                     "Allow HTTP traffic from ALB"
                 )
 
-        # Lookup subnet by name
-        subnet = ec2.Subnet.from_lookup(
+        # Lookup subnet ID by name and AZ
+        subnet_id = ssm.StringParameter.value_from_lookup(
+            self,
+            f"/{vpc_name}/{subnet_name}-subnet/{az}/id"
+        )
+        
+        subnet = ec2.Subnet.from_subnet_id(
             self,
             f"{ec2_name}-subnet",
-            vpc=vpc,
-            subnet_name=subnet_name,
-            availability_zone=az
+            subnet_id
         )
 
         user_data = ec2.UserData.for_windows()
