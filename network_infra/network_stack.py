@@ -110,6 +110,23 @@ class NetworkStack(Stack):
                 description=f"Private Subnet {i+1} AZ for {vpc_name}"
             )
         
+        # Create SSM parameters for named subnets
+        subnet_name_mapping = {
+            'public': self.vpc.public_subnets,
+            'app-private': self.vpc.private_subnets[:1] if self.vpc.private_subnets else [],
+            'ec2-private': self.vpc.private_subnets[1:2] if len(self.vpc.private_subnets) > 1 else [],
+            'isolated': self.vpc.isolated_subnets
+        }
+        
+        for subnet_name, subnets in subnet_name_mapping.items():
+            for subnet in subnets:
+                ssm.StringParameter(
+                    self, f"{identifier}-{subnet_name}-{subnet.availability_zone}-param",
+                    parameter_name=f"/{vpc_name}/{subnet_name}-subnet/{subnet.availability_zone}/id",
+                    string_value=subnet.subnet_id,
+                    description=f"{subnet_name} Subnet ID in {subnet.availability_zone} for {vpc_name}"
+                )
+        
         # Create SSM parameters for isolated subnet IDs
         for i, subnet in enumerate(self.vpc.isolated_subnets):
             ssm.StringParameter(
