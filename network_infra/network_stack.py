@@ -1,3 +1,7 @@
+# Network infrastructure stack for VPC and subnet creation
+# Handles VPC deployment with public, private, and isolated subnets
+# Stores subnet information in SSM Parameter Store for cross-stack reference
+
 from aws_cdk import (
     Stack,
     Tags,
@@ -13,11 +17,13 @@ from constructs import Construct
 from . import config
 
 class NetworkStack(Stack):
+    """CDK Stack for creating VPC and networking infrastructure"""
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         
         super().__init__(scope, construct_id, **kwargs)
 
+        # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
             vpc = self.create_vpc(
                 vpc_config,
@@ -31,7 +37,7 @@ class NetworkStack(Stack):
                 vpc_config.ISOLATED_SUBNET_MASK
             )
             
-            # Add CloudFormation outputs for VPC ID
+            # Export VPC ID for cross-stack reference
             CfnOutput(
                 self, f"{vpc_config.VPV_ID}-id-output",
                 value=vpc.vpc_id,
@@ -40,12 +46,15 @@ class NetworkStack(Stack):
             )
     
     def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
+        """Create subnet configurations based on type and CIDR mask"""
+        # Map string types to CDK subnet types
         subnet_type_map = {
-            'public': ec2.SubnetType.PUBLIC,
-            'private': ec2.SubnetType.PRIVATE_WITH_EGRESS,
-            'isolated': ec2.SubnetType.PRIVATE_ISOLATED
+            'public': ec2.SubnetType.PUBLIC,                    # Internet gateway access
+            'private': ec2.SubnetType.PRIVATE_WITH_EGRESS,      # NAT gateway for outbound
+            'isolated': ec2.SubnetType.PRIVATE_ISOLATED         # No internet access
         }
         
+        # Create subnet configuration for each name
         return [ec2.SubnetConfiguration(
             name=name,
             subnet_type=subnet_type_map[subnet_type],
@@ -54,25 +63,30 @@ class NetworkStack(Stack):
 
     
     def create_vpc(self, vpc_config, identifier, vpc_name, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
+        """Create VPC with subnets and store references in SSM Parameter Store"""
 
+        # Build subnet configurations from VPC config
         subnet_configs = []
         for subnet_spec in vpc_config.SUBNETS:
+            # Select appropriate CIDR mask based on subnet type
             mask = public_subnet_mask if subnet_spec.subnet_type == "public" else \
                 private_subnet_mask if subnet_spec.subnet_type == "private" else isolated_subnet_mask
+            # Add subnet configurations to list
             subnet_configs.extend(self.create_subnet_configurations(
                 subnet_spec.names, subnet_spec.subnet_type, mask))
 
+        # Create VPC with specified configuration
         self.vpc = ec2.Vpc(
             self, identifier,
             vpc_name=vpc_name,
             ip_addresses=ec2.IpAddresses.cidr(vpc_cidr),
-            max_azs= vpc_maz_azs,
-            nat_gateways= nat_gw,
-            subnet_configuration=subnet_configs
+            max_azs=vpc_maz_azs,                    # Maximum availability zones
+            nat_gateways=nat_gw,                    # Number of NAT gateways
+            subnet_configuration=subnet_configs      # Subnet layout
         )
         Tags.of(self.vpc).add("Name", vpc_name)
         
-        # Create SSM parameters for VPC ID
+        # Store VPC ID in SSM Parameter Store for cross-stack reference
         ssm.StringParameter(
             self, f"{identifier}-vpc-id-param",
             parameter_name=f"/{vpc_name}/id",
@@ -80,14 +94,16 @@ class NetworkStack(Stack):
             description=f"VPC ID for {vpc_name}"
         )
         
-        # Create SSM parameters for public subnet IDs
+        # Store public subnet IDs and availability zones in SSM
         for i, subnet in enumerate(self.vpc.public_subnets):
+            # Store subnet ID
             ssm.StringParameter(
                 self, f"{identifier}-public-subnet-{i+1}-param",
                 parameter_name=f"/{vpc_name}/public-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Public Subnet {i+1} ID for {vpc_name}"
             )
+            # Store availability zone
             ssm.StringParameter(
                 self, f"{identifier}-public-subnet-{i+1}-az-param",
                 parameter_name=f"/{vpc_name}/public-subnet-{i+1}/az",
@@ -95,14 +111,16 @@ class NetworkStack(Stack):
                 description=f"Public Subnet {i+1} AZ for {vpc_name}"
             )
         
-        # Create SSM parameters for private subnet IDs
+        # Store private subnet IDs and availability zones in SSM
         for i, subnet in enumerate(self.vpc.private_subnets):
+            # Store subnet ID
             ssm.StringParameter(
                 self, f"{identifier}-private-subnet-{i+1}-param",
                 parameter_name=f"/{vpc_name}/private-subnet-{i+1}/id",
                 string_value=subnet.subnet_id,
                 description=f"Private Subnet {i+1} ID for {vpc_name}"
             )
+            # Store availability zone
             ssm.StringParameter(
                 self, f"{identifier}-private-subnet-{i+1}-az-param",
                 parameter_name=f"/{vpc_name}/private-subnet-{i+1}/az",
@@ -110,14 +128,15 @@ class NetworkStack(Stack):
                 description=f"Private Subnet {i+1} AZ for {vpc_name}"
             )
         
-        # Create SSM parameters for named subnets
+        # Store named subnet mappings for application-specific access
         subnet_name_mapping = {
             'public': self.vpc.public_subnets,
-            'app-private': self.vpc.private_subnets[:1] if self.vpc.private_subnets else [],
-            'ec2-private': self.vpc.private_subnets[1:2] if len(self.vpc.private_subnets) > 1 else [],
+            'app-private': self.vpc.private_subnets[:1] if self.vpc.private_subnets else [],      # First private subnet
+            'ec2-private': self.vpc.private_subnets[1:2] if len(self.vpc.private_subnets) > 1 else [],  # Second private subnet
             'isolated': self.vpc.isolated_subnets
         }
         
+        # Create SSM parameters for named subnet access by AZ
         for subnet_name, subnets in subnet_name_mapping.items():
             for subnet in subnets:
                 ssm.StringParameter(
@@ -127,7 +146,7 @@ class NetworkStack(Stack):
                     description=f"{subnet_name} Subnet ID in {subnet.availability_zone} for {vpc_name}"
                 )
         
-        # Create SSM parameters for isolated subnet IDs
+        # Store isolated subnet IDs in SSM (no internet access subnets)
         for i, subnet in enumerate(self.vpc.isolated_subnets):
             ssm.StringParameter(
                 self, f"{identifier}-isolated-subnet-{i+1}-param",
@@ -136,7 +155,7 @@ class NetworkStack(Stack):
                 description=f"Isolated Subnet {i+1} ID for {vpc_name}"
             )            
             
-        # Return the VPC
+        # Return created VPC for further use
         return self.vpc
 
 

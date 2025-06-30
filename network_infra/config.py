@@ -1,4 +1,7 @@
 # config.py
+# Network infrastructure configuration for VPC and subnet definitions
+# Defines VPC CIDR blocks, subnet configurations, and NAT gateway settings
+
 from dataclasses import dataclass, field
 import uuid
 from typing import List
@@ -8,41 +11,44 @@ from aws_cdk import (
     aws_elasticloadbalancingv2 as elbv2,
 )
 
+# Import environment variables from common configuration
 ENV = common_config.ENV
 COMMON_NAME = common_config.COMMON_NAME
 APP_NAME = common_config.APP_NAME
 
 @dataclass
 class SubnetSpec:
-    names: List[str]
-    subnet_type: str
+    """Specification for subnet configuration within a VPC"""
+    names: List[str]        # List of subnet names to create
+    subnet_type: str        # Type: 'public', 'private', or 'isolated'
 
 @dataclass
 class VpcConfig:
+    """Configuration class for VPC and subnet settings"""
+    VPV_ID: str                         # CloudFormation logical ID for VPC
+    VPC_NAME: str                       # Name tag for the VPC
+    VPC_CIDR: str                       # CIDR block for VPC (e.g., 10.0.0.0/16)
+    VPC_MAX_AZS: int                    # Maximum availability zones to use
+    NAT_GATEWAY: int                    # Number of NAT gateways for private subnets
+    PUBLIC_SUBNET_MASK: int             # CIDR mask for public subnets (/24 = 256 IPs)
+    PRIVATE_SUBNET_MASK: int            # CIDR mask for private subnets
+    ISOLATED_SUBNET_MASK: int           # CIDR mask for isolated subnets
+    SUBNETS: List[SubnetSpec] = field(default_factory=list)  # Subnet specifications
 
-    VPV_ID: str
-    VPC_NAME: str
-    VPC_CIDR: str
-    VPC_MAX_AZS: int
-    NAT_GATEWAY: int
-    PUBLIC_SUBNET_MASK: int
-    PRIVATE_SUBNET_MASK: int
-    ISOLATED_SUBNET_MASK: int
-    SUBNETS: List[SubnetSpec] = field(default_factory=list)
-
+# VPC configuration for exchange environment
 VPC_EXCHANGE = VpcConfig(
-    VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',
-    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',
-    VPC_CIDR='10.0.0.0/16',
-    VPC_MAX_AZS=3,
-    NAT_GATEWAY=1,
-    PUBLIC_SUBNET_MASK=24,
-    PRIVATE_SUBNET_MASK=24,
-    ISOLATED_SUBNET_MASK=24,
-        SUBNETS=[
-            SubnetSpec(["public"], "public"),
-            SubnetSpec(["app-private", "ec2-private"], "private"), 
-            SubnetSpec(["isolated"], "isolated")
+    VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',          # Dynamic VPC ID based on environment
+    VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',        # Dynamic VPC name
+    VPC_CIDR='10.0.0.0/16',                     # VPC CIDR block (65,536 IP addresses)
+    VPC_MAX_AZS=3,                              # Use up to 3 availability zones
+    NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
+    PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
+    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
+    ISOLATED_SUBNET_MASK=24,                    # /24 subnets for isolated resources
+    SUBNETS=[
+        SubnetSpec(["public"], "public"),       # Public subnet with internet gateway
+        SubnetSpec(["private"], "private"),     # Private subnet with NAT gateway access
+        SubnetSpec(["isolated"], "isolated")   # Isolated subnet with no internet access
     ]
 )
 
@@ -57,4 +63,5 @@ VPC_EXCHANGE = VpcConfig(
 #     ISOLATED_SUBNET_MASK=24
 # )
 
+# List of all VPC configurations to be deployed
 VPC_LIST = [VPC_EXCHANGE]
