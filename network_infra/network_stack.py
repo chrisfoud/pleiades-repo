@@ -128,32 +128,30 @@ class NetworkStack(Stack):
                 description=f"Private Subnet {i+1} AZ for {vpc_name}"
             )
         
-        # Store named subnet mappings for application-specific access
-        subnet_name_mapping = {
+        # Create SSM parameters for subnet access by name and AZ based on config
+        subnet_type_mapping = {
             'public': self.vpc.public_subnets,
-            'app-private': self.vpc.private_subnets[:1] if self.vpc.private_subnets else [],      # First private subnet
-            'ec2-private': self.vpc.private_subnets[1:2] if len(self.vpc.private_subnets) > 1 else [],  # Second private subnet
+            'private': self.vpc.private_subnets,
             'isolated': self.vpc.isolated_subnets
         }
         
-        # Create SSM parameters for named subnet access by AZ
-        for subnet_name, subnets in subnet_name_mapping.items():
-            for subnet in subnets:
-                ssm.StringParameter(
-                    self, f"{identifier}-{subnet_name}-{subnet.availability_zone}-param",
-                    parameter_name=f"/{vpc_name}/{subnet_name}-subnet/{subnet.availability_zone}/id",
-                    string_value=subnet.subnet_id,
-                    description=f"{subnet_name} Subnet ID in {subnet.availability_zone} for {vpc_name}"
-                )
+        # Create parameters for each subnet type defined in config
+        for subnet_spec in vpc_config.SUBNETS:
+            subnet_type = subnet_spec.subnet_type
+            subnet_names = subnet_spec.names
+            subnets = subnet_type_mapping.get(subnet_type, [])
+            
+            # Create parameters for each subnet name in the spec
+            for subnet_name in subnet_names:
+                for subnet in subnets:
+                    ssm.StringParameter(
+                        self, f"{identifier}-{subnet_name}-{subnet.availability_zone}-param",
+                        parameter_name=f"/{vpc_name}/{subnet_name}-subnet/{subnet.availability_zone}/id",
+                        string_value=subnet.subnet_id,
+                        description=f"{subnet_name} Subnet ID in {subnet.availability_zone} for {vpc_name}"
+                    )
         
-        # Store isolated subnet IDs in SSM (no internet access subnets)
-        for i, subnet in enumerate(self.vpc.isolated_subnets):
-            ssm.StringParameter(
-                self, f"{identifier}-isolated-subnet-{i+1}-param",
-                parameter_name=f"/{vpc_name}/isolated-subnet-{i+1}/id",
-                string_value=subnet.subnet_id,
-                description=f"Isolated Subnet {i+1} ID for {vpc_name}"
-            )            
+            
             
         # Return created VPC for further use
         return self.vpc

@@ -39,7 +39,7 @@ class EC2Config:
     EC2_AZ: str                 # Availability zone for instance placement
     AMI_ID: str                 # Amazon Machine Image ID
     EC2_ALB: str                # Associated ALB name (None if no ALB)
-    EC2_KEYPAIR: str            # SSH keypair name (None if no SSH access)
+    EC2_KEYPAIR: str            # SSH keypair name (None if no access)
 
 
 
@@ -86,7 +86,7 @@ EC2_EXCHANGE_1 = EC2Config(
     AMI_REGION='eu-central-1',                  # Frankfurt region
     EC2_SUBNET_NAME='private',                  # Private subnet for application tier
     EC2_AZ='eu-central-1a',                     # Availability zone A
-    AMI_ID='ami-016c25765a1fa5a76',             # Amazon Linux 2 AMI
+    AMI_ID='ami-016c25765a1fa5a76',             # Windows AMI
     INSTANCE_IDS=[],                            # Will be populated after creation
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb',         # Associate with ALB for load balancing
     EC2_KEYPAIR='test-keypair'                  # SSH key for instance access
