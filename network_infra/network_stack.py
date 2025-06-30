@@ -26,7 +26,7 @@ class NetworkStack(Stack):
         subnet_size = 2 ** (32 - subnet_mask)
         max_possible_subnets = vpc.num_addresses // subnet_size
         if num_subnets > max_possible_subnets:
-            raise ValueError(f"Cannot fit {num_subnets} subnets of /{subnet_mask} into {vpc_cidr}. Max possible: {max_possible_subnets}")
+            raise ValueError(f"Cannot fit {num_subnets} subnets of mask /{subnet_mask} into {vpc_cidr}. Max possible: {max_possible_subnets}")
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         
