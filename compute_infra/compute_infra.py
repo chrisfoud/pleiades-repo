@@ -272,10 +272,11 @@ class ComputeStack(Stack):
             f"/{vpc_name}/{subnet_name}-subnet/{az}/id"
         )
         
-        subnet = ec2.Subnet.from_subnet_id(
+        subnet = ec2.Subnet.from_subnet_attributes(
             self,
             f"{ec2_name}-subnet",
-            subnet_id
+            subnet_id=subnet_id,
+            availability_zone=az
         )
 
         user_data = ec2.UserData.for_windows()
