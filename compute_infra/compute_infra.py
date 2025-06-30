@@ -269,7 +269,7 @@ class ComputeStack(Stack):
         # Lookup subnet ID by name and AZ
         subnet_id = ssm.StringParameter.value_from_lookup(
             self,
-            f"/{vpc_name}/{subnet_name}-subnet/id"
+            f"/{vpc_name}/{subnet_name}-subnet/{az}/id"
         )
         
         subnet = ec2.Subnet.from_subnet_attributes(
