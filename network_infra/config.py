@@ -47,7 +47,7 @@ VPC_EXCHANGE = VpcConfig(
     ISOLATED_SUBNET_MASK=19,                    # /24 subnets for isolated resources
     SUBNETS=[
         SubnetSpec(["public-"], "public"),       # Public subnet with internet gateway
-        SubnetSpec(["private-"], "private"),     # Private subnet with NAT gateway access
+        SubnetSpec(["private-","db-","redis-","mq-","lambda-","elasticache-","efs-","kinesis-","dynamodb-","sagemaker-","redshift-","docdb-","dax-","memcached-","opensearch-","dynamodb-global-","dax-global-","memcached-global-","opensearch-global-"], "private"),     # Private subnet with NAT gateway access
         SubnetSpec(["isolated-","db-","redis-","mq-","lambda-","elasticache-","efs-","kinesis-","dynamodb-","sagemaker-","redshift-","docdb-","dax-","memcached-","opensearch-","dynamodb-global-","dax-global-","memcached-global-","opensearch-global-"], "isolated")   # Isolated subnet with no internet access
     ]
 )
