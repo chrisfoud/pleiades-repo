@@ -43,7 +43,7 @@ VPC_EXCHANGE = VpcConfig(
     VPC_MAX_AZS=3,                              # Use up to 3 availability zones
     NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
     PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
-    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
+    PRIVATE_SUBNET_MASK=19,                     # /24 subnets for private resources
     ISOLATED_SUBNET_MASK=19,                    # /24 subnets for isolated resources
     SUBNETS=[
         SubnetSpec(["public-"], "public"),       # Public subnet with internet gateway
