@@ -74,10 +74,12 @@ class ComputeStack(Stack):
                 compute_config.EC2_NAME,
                 vpc_data['vpc'],
                 vpc_data['private_subnet_ids'],
+                vpc_data['public_subnet_ids'],
                 compute_config.EC2_VPC,
                 compute_config.EC2_INSTANCE_TYPE,
                 compute_config.AMI_REGION,
                 compute_config.EC2_SUBNET,
+                compute_config.EC2_SUBNET_TYPE,
                 compute_config.AMI_ID,
                 compute_config.EC2_KEYPAIR,
                 compute_config.EC2_ALB,
@@ -213,7 +215,7 @@ class ComputeStack(Stack):
 # EC2
 ###############################################################################################################
 
-    def create_ec2(self,ec2_name, vpc, private_subnet_ids,vpc_name, instance_type, ami_region, specific_subnet, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups, sg_id=None):
+    def create_ec2(self,ec2_name, vpc, private_subnet_ids, public_subnet_ids, vpc_name, instance_type, ami_region, specific_subnet, subnet_type, ami_id, key_name, ec2_alb, alb_target_groups, alb_security_groups, sg_id=None):
         ec2_role = iam.Role(
             self,
             f"{ec2_name}-role",
@@ -266,34 +268,38 @@ class ComputeStack(Stack):
                     "Allow HTTP traffic from ALB"
                 )
 
-        private_subnets = []
-        if specific_subnet and private_subnet_ids:
+        # Select subnet IDs based on type
+        subnet_ids = private_subnet_ids if subnet_type == 'private' else public_subnet_ids
+        subnet_prefix = subnet_type
+        
+        subnets = []
+        if specific_subnet and subnet_ids:
             # Use specific subnet
             subnet_index = int(specific_subnet) - 1
-            subnet_id = private_subnet_ids[subnet_index]
+            subnet_id = subnet_ids[subnet_index]
             az = ssm.StringParameter.value_from_lookup(
                 self, 
-                f"/{vpc_name}/private-subnet-{specific_subnet}/az"
+                f"/{vpc_name}/{subnet_prefix}-subnet-{specific_subnet}/az"
             )
-            private_subnets.append(
+            subnets.append(
                 ec2.Subnet.from_subnet_attributes(
                     self, 
-                    f"{ec2_name}-PrivateSubnet{specific_subnet}",
+                    f"{ec2_name}-{subnet_prefix.title()}Subnet{specific_subnet}",
                     subnet_id=subnet_id,
                     availability_zone=az
                 )
             )
-        elif private_subnet_ids:
+        elif subnet_ids:
             # Use all subnets (random placement)
-            for i, subnet_id in enumerate(private_subnet_ids):
+            for i, subnet_id in enumerate(subnet_ids):
                 az = ssm.StringParameter.value_from_lookup(
                     self, 
-                    f"/{vpc_name}/private-subnet-{i+1}/az"
+                    f"/{vpc_name}/{subnet_prefix}-subnet-{i+1}/az"
                 )
-                private_subnets.append(
+                subnets.append(
                     ec2.Subnet.from_subnet_attributes(
                         self, 
-                        f"{ec2_name}-PrivateSubnet{i+1}",
+                        f"{ec2_name}-{subnet_prefix.title()}Subnet{i+1}",
                         subnet_id=subnet_id,
                         availability_zone=az
                     )
@@ -311,7 +317,7 @@ class ComputeStack(Stack):
                 instance_type=ec2.InstanceType(instance_type),
                 machine_image=ec2.MachineImage.generic_windows({ami_region: ami_id}),
                 security_group=ec2_security_group,
-                vpc_subnets=ec2.SubnetSelection(subnets=private_subnets),
+                vpc_subnets=ec2.SubnetSelection(subnets=subnets),
                 key_name=key_name,
                 user_data=user_data,
                 role=ec2_role

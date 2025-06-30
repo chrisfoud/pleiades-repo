@@ -30,6 +30,7 @@ class EC2Config:
     INSTANCE_IDS: List[str]
     AMI_REGION: str
     EC2_SUBNET: str  # Specific subnet number (1-3) or None for random
+    EC2_SUBNET_TYPE: str  # 'public' or 'private'
     AMI_ID: str
     EC2_ALB: str
     EC2_KEYPAIR: str
@@ -61,6 +62,7 @@ EC2_EXCHANGE_1 = EC2Config(
     EC2_SG_ID= None,
     AMI_REGION='eu-central-1',
     EC2_SUBNET='1',  # Specific subnet (1-3) or None for random
+    EC2_SUBNET_TYPE='private',  # 'public' or 'private'
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb',  # Specify ALB name or None
@@ -74,6 +76,7 @@ EC2_EXCHANGE_2 = EC2Config(
     EC2_SG_ID= None,
     AMI_REGION='eu-central-1',
     EC2_SUBNET='2',  # Specific subnet (1-3) or None for random
+    EC2_SUBNET_TYPE='private',  # 'public' or 'private'
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=f'{ENV}-{COMMON_NAME}-alb',  # Specify ALB name or None
@@ -87,6 +90,7 @@ DC_SERVER_1 = EC2Config(
     EC2_SG_ID= None,
     AMI_REGION='eu-central-1',
     EC2_SUBNET='3',  # Specific subnet (1-3) or None for random
+    EC2_SUBNET_TYPE='public',  # 'public' or 'private'
     AMI_ID='ami-016c25765a1fa5a76',
     INSTANCE_IDS= [],
     EC2_ALB=None,  # Specify ALB name or None
