@@ -19,20 +19,23 @@ import ipaddress
 
 class NetworkStack(Stack):
     """CDK Stack for creating VPC and networking infrastructure"""
+    _validation_done = False
     
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         
-        # Validate all VPCs once at initialization
-        for vpc_config in config.VPC_LIST:
-            self.validate_subnet_capacity(
-                vpc_config.VPC_CIDR, 
-                vpc_config, 
-                vpc_config.PUBLIC_SUBNET_MASK,
-                vpc_config.PRIVATE_SUBNET_MASK,
-                vpc_config.ISOLATED_SUBNET_MASK,
-                vpc_config.VPC_MAX_AZS
-            )
+        # Validate all VPCs once globally
+        if not NetworkStack._validation_done:
+            for vpc_config in config.VPC_LIST:
+                self.validate_subnet_capacity(
+                    vpc_config.VPC_CIDR, 
+                    vpc_config, 
+                    vpc_config.PUBLIC_SUBNET_MASK,
+                    vpc_config.PRIVATE_SUBNET_MASK,
+                    vpc_config.ISOLATED_SUBNET_MASK,
+                    vpc_config.VPC_MAX_AZS
+                )
+            NetworkStack._validation_done = True
         
         # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
