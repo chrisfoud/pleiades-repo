@@ -17,15 +17,18 @@ from constructs import Construct
 from . import config
 import ipaddress
 
+# Module-level validation flag
+_validation_completed = False
+
 class NetworkStack(Stack):
     """CDK Stack for creating VPC and networking infrastructure"""
-    _validation_done = False
     
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        global _validation_completed
         
         # Validate all VPCs once globally
-        if not NetworkStack._validation_done:
+        if not _validation_completed:
             for vpc_config in config.VPC_LIST:
                 self.validate_subnet_capacity(
                     vpc_config.VPC_CIDR, 
@@ -35,7 +38,7 @@ class NetworkStack(Stack):
                     vpc_config.ISOLATED_SUBNET_MASK,
                     vpc_config.VPC_MAX_AZS
                 )
-            NetworkStack._validation_done = True
+            _validation_completed = True
         
         # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
