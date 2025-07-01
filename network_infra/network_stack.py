@@ -106,7 +106,7 @@ class NetworkStack(Stack):
             nat_gateways=nat_gw,                    # Number of NAT gateways
             subnet_configuration=subnet_configs      # Subnet layout
         )
-        Tags.of(self.vpc).add("Name", vpc_name)
+        Tags.of(self.vpc).add("Name", f'{vpc_name}-vpc')
         
         # Store VPC ID in SSM Parameter Store for cross-stack reference
         ssm.StringParameter(
@@ -168,7 +168,7 @@ class NetworkStack(Stack):
                 for i, subnet in enumerate(subnets):
                     # Tag subnet with unique name in format: env-commonname-subnetname-subnet-az
                     az_number = i + 1
-                    Tags.of(subnet).add("Name", f"{config.ENV}-{config.COMMON_NAME}-{subnet_name}-subnet-{az_number}")
+                    Tags.of(subnet).add("Name", f"{vpc_name}-{subnet_name}-subnet-{az_number}")
                     # Create SSM parameter
                     ssm.StringParameter(
                         self, f"{identifier}-{subnet_name}-{subnet.availability_zone.replace('-', '')}-param",

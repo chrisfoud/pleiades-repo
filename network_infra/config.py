@@ -52,16 +52,21 @@ VPC_EXCHANGE = VpcConfig(
     ]
 )
 
-# VPC_DEV = VpcConfig(
-#     VPV_ID=f'dev-{COMMON_NAME}-vpc',
-#     VPC_NAME=f'dev-{COMMON_NAME}-vpc',
-#     VPC_CIDR='10.10.0.0/16',
-#     VPC_MAX_AZS=3,
-#     NAT_GATEWAY=1,
-#     PUBLIC_SUBNET_MASK=24,
-#     PRIVATE_SUBNET_MASK=24,
-#     ISOLATED_SUBNET_MASK=24
-# )
+VPC_DEV = VpcConfig(
+    VPV_ID=f'dev-{COMMON_NAME}',          # Dynamic VPC ID based on environment
+    VPC_NAME=f'dev-{COMMON_NAME}',        # Dynamic VPC name
+    VPC_CIDR='10.10.0.0/16',                     # VPC CIDR block (65,536 IP addresses)
+    VPC_MAX_AZS=2,                              # Use up to 3 availability zones
+    NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
+    PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
+    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
+    ISOLATED_SUBNET_MASK=24,                    # /24 subnets for isolated resources
+    SUBNETS=[
+        SubnetSpec(["public",], "public"),       # Public subnet with internet gateway
+        SubnetSpec(["private"], "private"),     # Private subnet with NAT gateway access
+        SubnetSpec(["isolated"], "isolated")   # Isolated subnet with no internet access
+    ]
+)
 
 # List of all VPC configurations to be deployed
-VPC_LIST = [VPC_EXCHANGE]
+VPC_LIST = [VPC_EXCHANGE,VPC_DEV]
