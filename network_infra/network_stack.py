@@ -31,8 +31,8 @@ class NetworkStack(Stack):
             mask = public_mask if subnet_spec.subnet_type == "public" else \
                 private_mask if subnet_spec.subnet_type == "private" else isolated_mask
             subnet_size = 2 ** (32 - mask)
-            for name in subnet_spec.names:
-                print(f"Subnet {name} (/{mask}): {subnet_size} IP addresses")
+            for i, name in enumerate(subnet_spec.names, 1):
+                print(f"Subnet {name}-az{i} (/{mask}): {subnet_size} IP addresses")
             total_required_addresses += len(subnet_spec.names) * subnet_size
         
         if total_required_addresses > vpc.num_addresses:
