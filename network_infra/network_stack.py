@@ -22,7 +22,17 @@ class NetworkStack(Stack):
     
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        self._validated_vpcs = set()
+        
+        # Validate all VPCs once at initialization
+        for vpc_config in config.VPC_LIST:
+            self.validate_subnet_capacity(
+                vpc_config.VPC_CIDR, 
+                vpc_config, 
+                vpc_config.PUBLIC_SUBNET_MASK,
+                vpc_config.PRIVATE_SUBNET_MASK,
+                vpc_config.ISOLATED_SUBNET_MASK,
+                vpc_config.VPC_MAX_AZS
+            )
         
         # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
@@ -48,10 +58,6 @@ class NetworkStack(Stack):
     
     def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int, max_azs: int) -> None:
         """Validate if VPC can accommodate all required subnets collectively"""
-        validation_key = f"{vpc_cidr}-{vpc_config.VPC_NAME}"
-        if validation_key in self._validated_vpcs:
-            return
-        
         vpc = ipaddress.IPv4Network(vpc_cidr)
         total_required_addresses = 0
         
@@ -68,8 +74,6 @@ class NetworkStack(Stack):
         
         if total_required_addresses > vpc.num_addresses:
             raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
-        
-        self._validated_vpcs.add(validation_key)
     
     def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
         """Create subnet configurations based on type and CIDR mask"""
@@ -91,8 +95,7 @@ class NetworkStack(Stack):
     def create_vpc(self, vpc_config, identifier, vpc_name, vpc_cidr, vpc_maz_azs, nat_gw, public_subnet_mask, private_subnet_mask, isolated_subnet_mask):
         """Create VPC with subnets and store references in SSM Parameter Store"""
 
-        # Validate subnet capacity before creating VPC
-        self.validate_subnet_capacity(vpc_cidr, vpc_config, public_subnet_mask, private_subnet_mask, isolated_subnet_mask, vpc_maz_azs)
+
 
         # Build subnet configurations from VPC config
         subnet_configs = []
