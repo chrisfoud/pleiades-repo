@@ -16,19 +16,18 @@ from typing import List
 from constructs import Construct
 from . import config
 import ipaddress
-
-# Module-level validation flag
-_validation_completed = False
+import os
+import tempfile
 
 class NetworkStack(Stack):
     """CDK Stack for creating VPC and networking infrastructure"""
     
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        global _validation_completed
         
-        # Validate all VPCs once globally
-        if not _validation_completed:
+        # Validate all VPCs once using file-based tracking
+        validation_file = os.path.join(tempfile.gettempdir(), 'cdk_vpc_validation.lock')
+        if not os.path.exists(validation_file):
             for vpc_config in config.VPC_LIST:
                 self.validate_subnet_capacity(
                     vpc_config.VPC_CIDR, 
@@ -38,7 +37,9 @@ class NetworkStack(Stack):
                     vpc_config.ISOLATED_SUBNET_MASK,
                     vpc_config.VPC_MAX_AZS
                 )
-            _validation_completed = True
+            # Create lock file
+            with open(validation_file, 'w') as f:
+                f.write('validated')
         
         # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
