@@ -46,7 +46,7 @@ class NetworkStack(Stack):
                 export_name=f"{vpc_config.VPC_NAME}-id"
             )
     
-    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int) -> None:
+    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int, max_azs: int) -> None:
         """Validate if VPC can accommodate all required subnets collectively"""
         if vpc_cidr in self._validated_vpcs:
             return
@@ -60,9 +60,10 @@ class NetworkStack(Stack):
             mask = public_mask if subnet_spec.subnet_type == "public" else \
                 private_mask if subnet_spec.subnet_type == "private" else isolated_mask
             subnet_size = 2 ** (32 - mask)
-            for i, name in enumerate(subnet_spec.names, 1):
-                print(f"Subnet {name}-az{i} (/{mask}): {subnet_size} IP addresses")
-            total_required_addresses += len(subnet_spec.names) * subnet_size
+            for name in subnet_spec.names:
+                for az in range(1, max_azs + 1):
+                    print(f"Subnet {name}-az{az} (/{mask}): {subnet_size} IP addresses")
+            total_required_addresses += len(subnet_spec.names) * max_azs * subnet_size
         
         if total_required_addresses > vpc.num_addresses:
             raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
@@ -90,7 +91,7 @@ class NetworkStack(Stack):
         """Create VPC with subnets and store references in SSM Parameter Store"""
 
         # Validate subnet capacity before creating VPC
-        self.validate_subnet_capacity(vpc_cidr, vpc_config, public_subnet_mask, private_subnet_mask, isolated_subnet_mask)
+        self.validate_subnet_capacity(vpc_cidr, vpc_config, public_subnet_mask, private_subnet_mask, isolated_subnet_mask, vpc_maz_azs)
 
         # Build subnet configurations from VPC config
         subnet_configs = []
