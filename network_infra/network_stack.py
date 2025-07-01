@@ -20,13 +20,23 @@ import ipaddress
 class NetworkStack(Stack):
     """CDK Stack for creating VPC and networking infrastructure"""
     
-    def validate_subnet_capacity(self, vpc_cidr: str, subnet_mask: int, num_subnets: int) -> None:
-        """Validate if VPC can accommodate the required number of subnets"""
+    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int) -> None:
+        """Validate if VPC can accommodate all required subnets collectively"""
         vpc = ipaddress.IPv4Network(vpc_cidr)
-        subnet_size = 2 ** (32 - subnet_mask)
-        max_possible_subnets = vpc.num_addresses // subnet_size
-        if num_subnets > max_possible_subnets:
-            raise ValueError(f"Cannot fit {num_subnets} subnets of mask /{subnet_mask} into {vpc_cidr}. Max possible: {max_possible_subnets}")
+        total_required_addresses = 0
+        
+        print(f"VPC {vpc_cidr} has {vpc.num_addresses} IP addresses")
+        
+        for subnet_spec in vpc_config.SUBNETS:
+            mask = public_mask if subnet_spec.subnet_type == "public" else \
+                private_mask if subnet_spec.subnet_type == "private" else isolated_mask
+            subnet_size = 2 ** (32 - mask)
+            for name in subnet_spec.names:
+                print(f"Subnet {name} (/{mask}): {subnet_size} IP addresses")
+            total_required_addresses += len(subnet_spec.names) * subnet_size
+        
+        if total_required_addresses > vpc.num_addresses:
+            raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         
@@ -75,11 +85,7 @@ class NetworkStack(Stack):
         """Create VPC with subnets and store references in SSM Parameter Store"""
 
         # Validate subnet capacity before creating VPC
-        for subnet_spec in vpc_config.SUBNETS:
-            mask = public_subnet_mask if subnet_spec.subnet_type == "public" else \
-                private_subnet_mask if subnet_spec.subnet_type == "private" else isolated_subnet_mask
-            num_subnets = len(subnet_spec.names)
-            self.validate_subnet_capacity(vpc_cidr, mask, num_subnets)
+        self.validate_subnet_capacity(vpc_cidr, vpc_config, public_subnet_mask, private_subnet_mask, isolated_subnet_mask)
 
         # Build subnet configurations from VPC config
         subnet_configs = []
