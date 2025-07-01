@@ -162,7 +162,7 @@ class NetworkStack(Stack):
                 for i, subnet in enumerate(subnets):
                     # Tag subnet with unique name in format: env-commonname-subnetname-subnet-az
                     az_number = i + 1
-                    Tags.of(subnet).add("Name", f"{vpc_config.ENV}-{vpc_config.COMMON_NAME}-{subnet_name}-subnet-{az_number}")
+                    Tags.of(subnet).add("Name", f"{config.ENV}-{config.COMMON_NAME}-{subnet_name}-subnet-{az_number}")
                     # Create SSM parameter
                     ssm.StringParameter(
                         self, f"{identifier}-{subnet_name}-{subnet.availability_zone.replace('-', '')}-param",
