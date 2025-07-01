@@ -20,28 +20,10 @@ import ipaddress
 class NetworkStack(Stack):
     """CDK Stack for creating VPC and networking infrastructure"""
     
-    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int) -> None:
-        """Validate if VPC can accommodate all required subnets collectively"""
-        vpc = ipaddress.IPv4Network(vpc_cidr)
-        total_required_addresses = 0
-        
-        print(f"VPC {vpc_cidr} has {vpc.num_addresses} IP addresses")
-        
-        for subnet_spec in vpc_config.SUBNETS:
-            mask = public_mask if subnet_spec.subnet_type == "public" else \
-                private_mask if subnet_spec.subnet_type == "private" else isolated_mask
-            subnet_size = 2 ** (32 - mask)
-            for i, name in enumerate(subnet_spec.names, 1):
-                print(f"Subnet {name}-az{i} (/{mask}): {subnet_size} IP addresses")
-            total_required_addresses += len(subnet_spec.names) * subnet_size
-        
-        if total_required_addresses > vpc.num_addresses:
-            raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
-
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
-        
         super().__init__(scope, construct_id, **kwargs)
-
+        self._validated_vpcs = set()
+        
         # Create VPCs from configuration list
         for vpc_config in config.VPC_LIST:
             vpc = self.create_vpc(
@@ -63,6 +45,29 @@ class NetworkStack(Stack):
                 description=f"VPC ID for {vpc_config.VPC_NAME}",
                 export_name=f"{vpc_config.VPC_NAME}-id"
             )
+    
+    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int) -> None:
+        """Validate if VPC can accommodate all required subnets collectively"""
+        if vpc_cidr in self._validated_vpcs:
+            return
+        
+        vpc = ipaddress.IPv4Network(vpc_cidr)
+        total_required_addresses = 0
+        
+        print(f"VPC {vpc_cidr} has {vpc.num_addresses} IP addresses")
+        
+        for subnet_spec in vpc_config.SUBNETS:
+            mask = public_mask if subnet_spec.subnet_type == "public" else \
+                private_mask if subnet_spec.subnet_type == "private" else isolated_mask
+            subnet_size = 2 ** (32 - mask)
+            for i, name in enumerate(subnet_spec.names, 1):
+                print(f"Subnet {name}-az{i} (/{mask}): {subnet_size} IP addresses")
+            total_required_addresses += len(subnet_spec.names) * subnet_size
+        
+        if total_required_addresses > vpc.num_addresses:
+            raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
+        
+        self._validated_vpcs.add(vpc_cidr)
     
     def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
         """Create subnet configurations based on type and CIDR mask"""
