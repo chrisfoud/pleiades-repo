@@ -69,7 +69,7 @@ class NetworkStack(Stack):
         vpc = ipaddress.IPv4Network(vpc_cidr)
         total_required_addresses = 0
         
-        print(f"VPC {vpc_cidr} has {vpc.num_addresses} IP addresses")
+        print(f"VPC {vpc_name} with CIDR {vpc_cidr} has {vpc.num_addresses} IP addresses")
         
         for subnet_spec in vpc_config.SUBNETS:
             mask = public_mask if subnet_spec.subnet_type == "public" else \
