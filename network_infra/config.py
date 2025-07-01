@@ -42,12 +42,12 @@ VPC_EXCHANGE = VpcConfig(
     VPC_CIDR='10.0.0.0/16',                     # VPC CIDR block (65,536 IP addresses)
     VPC_MAX_AZS=3,                              # Use up to 3 availability zones
     NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
-    PUBLIC_SUBNET_MASK=19,                      # /24 subnets (256 IPs each)
-    PRIVATE_SUBNET_MASK=19,                     # /24 subnets for private resources
+    PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
+    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
     ISOLATED_SUBNET_MASK=24,                    # /24 subnets for isolated resources
     SUBNETS=[
         SubnetSpec(["public"], "public"),       # Public subnet with internet gateway
-        SubnetSpec(["private","2-private"], "private"),     # Private subnet with NAT gateway access
+        SubnetSpec(["private"], "private"),     # Private subnet with NAT gateway access
         SubnetSpec(["isolated"], "isolated")   # Isolated subnet with no internet access
     ]
 )
@@ -58,13 +58,13 @@ VPC_DEV = VpcConfig(
     VPC_CIDR='10.10.0.0/16',                     # VPC CIDR block (65,536 IP addresses)
     VPC_MAX_AZS=2,                              # Use up to 3 availability zones
     NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
-    PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
-    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
-    ISOLATED_SUBNET_MASK=24,                    # /24 subnets for isolated resources
+    PUBLIC_SUBNET_MASK=19,                      # /24 subnets (256 IPs each)
+    PRIVATE_SUBNET_MASK=19,                     # /24 subnets for private resources
+    ISOLATED_SUBNET_MASK=19,                    # /24 subnets for isolated resources
     SUBNETS=[
-        SubnetSpec(["public",], "public"),       # Public subnet with internet gateway
-        SubnetSpec(["private"], "private"),     # Private subnet with NAT gateway access
-        SubnetSpec(["isolated"], "isolated")   # Isolated subnet with no internet access
+        SubnetSpec(["public","2-public"], "public"),       # Public subnet with internet gateway
+        SubnetSpec(["private","2-private"], "private"),     # Private subnet with NAT gateway access
+        SubnetSpec(["isolated","2-isolated"], "isolated")   # Isolated subnet with no internet access
     ]
 )
 
