@@ -151,18 +151,19 @@ class NetworkStack(Stack):
             'isolated': self.vpc.isolated_subnets
         }
         
-        # Create parameters for each subnet type defined in config
+        # Create parameters and tags for each subnet type defined in config
         for subnet_spec in vpc_config.SUBNETS:
             subnet_type = subnet_spec.subnet_type
             subnet_names = subnet_spec.names
             subnets = subnet_type_mapping.get(subnet_type, [])
             
-            # Create parameters and tags for each subnet name mapped to corresponding subnet
-            for i, subnet_name in enumerate(subnet_names):
-                if i < len(subnets):
-                    subnet = subnets[i]
-                    # Tag subnet with name
-                    Tags.of(subnet).add("Name", f"{subnet_name}-subnet")
+            # Tag each subnet with corresponding name and create parameters
+            for i, subnet in enumerate(subnets):
+                if i < len(subnet_names):
+                    subnet_name = subnet_names[i]
+                    # Tag subnet with unique name in format: env-commonname-subnetname-subnet-az
+                    az_suffix = subnet.availability_zone[-1]  # Get last character (a, b, c)
+                    Tags.of(subnet).add("Name", f"{vpc_name}-{subnet_name}-subnet-{az_suffix}")
                     # Create SSM parameter
                     ssm.StringParameter(
                         self, f"{identifier}-{subnet_name}-{subnet.availability_zone.replace('-', '')}-param",
