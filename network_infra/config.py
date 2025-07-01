@@ -39,12 +39,12 @@ class VpcConfig:
 VPC_EXCHANGE = VpcConfig(
     VPV_ID=f'{ENV}-{COMMON_NAME}-vpc',          # Dynamic VPC ID based on environment
     VPC_NAME=f'{ENV}-{COMMON_NAME}-vpc',        # Dynamic VPC name
-    VPC_CIDR='10.0.0.0/16',                     # VPC CIDR block (65,536 IP addresses)
+    VPC_CIDR='10.0.0.0/25',                     # VPC CIDR block (65,536 IP addresses)
     VPC_MAX_AZS=3,                              # Use up to 3 availability zones
     NAT_GATEWAY=1,                              # Single NAT gateway for cost optimization
-    PUBLIC_SUBNET_MASK=24,                      # /24 subnets (256 IPs each)
-    PRIVATE_SUBNET_MASK=24,                     # /24 subnets for private resources
-    ISOLATED_SUBNET_MASK=24,                    # /24 subnets for isolated resources
+    PUBLIC_SUBNET_MASK=26,                      # /24 subnets (256 IPs each)
+    PRIVATE_SUBNET_MASK=27,                     # /24 subnets for private resources
+    ISOLATED_SUBNET_MASK=27,                    # /24 subnets for isolated resources
     SUBNETS=[
         SubnetSpec(["public"], "public"),       # Public subnet with internet gateway
         SubnetSpec(["private"], "private"),     # Private subnet with NAT gateway access
