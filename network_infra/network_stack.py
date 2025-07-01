@@ -30,6 +30,7 @@ class NetworkStack(Stack):
         if not os.path.exists(validation_file):
             for vpc_config in config.VPC_LIST:
                 self.validate_subnet_capacity(
+                    vpc_config.VPC_NAME,
                     vpc_config.VPC_CIDR, 
                     vpc_config, 
                     vpc_config.PUBLIC_SUBNET_MASK,
@@ -63,7 +64,7 @@ class NetworkStack(Stack):
                 export_name=f"{vpc_config.VPC_NAME}-id"
             )
     
-    def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int, max_azs: int) -> None:
+    def validate_subnet_capacity(self, vpc_name, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int, max_azs: int) -> None:
         """Validate if VPC can accommodate all required subnets collectively"""
         vpc = ipaddress.IPv4Network(vpc_cidr)
         total_required_addresses = 0
@@ -80,7 +81,7 @@ class NetworkStack(Stack):
             total_required_addresses += len(subnet_spec.names) * max_azs * subnet_size
         
         if total_required_addresses > vpc.num_addresses:
-            raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
+            raise ValueError(f"For {vpc_name} Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
     
     def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
         """Create subnet configurations based on type and CIDR mask"""
