@@ -48,7 +48,8 @@ class NetworkStack(Stack):
     
     def validate_subnet_capacity(self, vpc_cidr: str, vpc_config, public_mask: int, private_mask: int, isolated_mask: int, max_azs: int) -> None:
         """Validate if VPC can accommodate all required subnets collectively"""
-        if vpc_cidr in self._validated_vpcs:
+        validation_key = f"{vpc_cidr}-{vpc_config.VPC_NAME}"
+        if validation_key in self._validated_vpcs:
             return
         
         vpc = ipaddress.IPv4Network(vpc_cidr)
@@ -68,7 +69,7 @@ class NetworkStack(Stack):
         if total_required_addresses > vpc.num_addresses:
             raise ValueError(f"Cannot fit all subnets into {vpc_cidr}. Required: {total_required_addresses}, Available: {vpc.num_addresses}")
         
-        self._validated_vpcs.add(vpc_cidr)
+        self._validated_vpcs.add(validation_key)
     
     def create_subnet_configurations(self, names, subnet_type, cidr_mask) -> List[ec2.SubnetConfiguration]:
         """Create subnet configurations based on type and CIDR mask"""
